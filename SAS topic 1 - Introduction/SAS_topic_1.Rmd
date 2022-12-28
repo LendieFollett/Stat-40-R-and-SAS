@@ -5,6 +5,7 @@ author: "Dr. Lendie Follett"
 date: 'Fall 2022'
 output:
   xaringan::moon_reader:
+      self_contained: true
       nature:
         highlightLines: true
         countIncrementalSlides: false
@@ -169,7 +170,8 @@ Two kinds of steps make up SAS programs: DATA steps and PROC steps. A SAS progra
 ## More on steps
 
 * A step is made up of *statements* (the last of which being a `run` statement...), which are appropriate for that specific step.
--- 
+
+--
 
 * **All statements end with a semicolon!** 
 --
