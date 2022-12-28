@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Introduction to SAS</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr. Lendie Follett" />
+    <script src="SAS_topic_1_files/header-attrs-2.14/header-attrs.js"></script>
+    <link href="SAS_topic_1_files/remark-css-0.0.1/hygge-duke.css" rel="stylesheet" />
+    <link href="SAS_topic_1_files/remark-css-0.0.1/tamu-fonts.css" rel="stylesheet" />
+    <script src="SAS_topic_1_files/fabric-4.3.1/fabric.min.js"></script>
+    <link href="SAS_topic_1_files/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
+    <script src="SAS_topic_1_files/xaringanExtra-scribble-0.0.1/scribble.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#FF0000"],"pen_size":3,"eraser_size":30,"palette":[]}) })</script>
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Introduction to SAS
+]
+.author[
+### Dr. Lendie Follett
+]
+.date[
+### Fall 2022
+]
+
+---
+
+&lt;style type="text/css"&gt;
+  .reveal p {
+    text-align: left;
+  }
+  .reveal ul {
+    display: block;
+  }
+  .reveal ol {
+    display: block;
+  }  
+&lt;/style&gt;
+
+&lt;!-- Note: For presenter mode, first copyf the html presentation with keyboard shortcut "c". Make sure mirroring is off. Press p to toggle the presenter mode. Have the copy on the big screen and go full screen mode "f" with the one on the laptop. https://bookdown.org/yihui/rmarkdown/xaringan-key.html --&gt;
+
+  
+
+
+
+## Getting access
+
+We will be using SAS Studio. This is a web-based interface that connects to SAS on a server. Since it runs in a web-browser, you don't need to download any program. However, you will need to sign up, as a student, for free access. 
+
+
+**This is your first assignment. It is due PRIOR TO CLASS ON WEDNESDAY. See instructions on the next slide**:
+
+---
+
+## Instructions
+1. Visit https://odamid.oda.sas.com and click on Register for an account.
+
+2. After you have successfully created your account, follow these steps:
+
+  + Sign on the the Control Center at https://odamid.oda.sas.com}
+  + Look for the Enroll in a course link in the "Enrollments" section near the bottom of the page. Click this link to start the enrollment.
+  + Enter the course code: e074b22e-b478-4023-8a4c-92a48701c27a
+  + Submit the form.
+  + Confirm that this is the correct course and then click the button to finish enrolling.
+
+Summary of details you may need:
+  - Course Name:	Stat 40
+  - Level:	Undergraduate
+  - Institution:	Drake University
+  - Course Code:	e074b22e-b478-4023-8a4c-92a48701c27a
+  - Software application we will use: SAS Studio
+
+---
+
+
+## Getting Started
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="Images/SAS_t1_screen.png" alt="SAS Studio interface" width="70%" height="50%" /&gt;
+&lt;p class="caption"&gt;SAS Studio interface&lt;/p&gt;
+&lt;/div&gt;
+
+---
+## SAS Interface
+There are three basic components you will interact with in SAS: 
+
+&lt;div class="figure"&gt;
+&lt;img src="Images/SAS_t1_editor.png" alt="Three basic components of programming in SAS. From left to right: Editor, Log, Results and Output" width="31%" height="20%" /&gt;&lt;img src="Images/SAS_t1_log.png" alt="Three basic components of programming in SAS. From left to right: Editor, Log, Results and Output" width="31%" height="20%" /&gt;&lt;img src="Images/SAS_t1_results.png" alt="Three basic components of programming in SAS. From left to right: Editor, Log, Results and Output" width="31%" height="20%" /&gt;
+&lt;p class="caption"&gt;Three basic components of programming in SAS. From left to right: Editor, Log, Results and Output&lt;/p&gt;
+&lt;/div&gt;
+
+???
+1. A place where you write and submit code. Called an 'editor'.
+2. view messages related to the code you submitted. Called a 'log'.
+3. A place where you can see the output and results of the code you submitted. 
+
+%Editor Window. The Editor Window is where you type in your SAS programs. It allows you to perform standard editing tasks, such as entering, editing and submitting programs. In the Editor window, you can also open previously saved SAS programs, as well as save new SAS programs. After you have typed in your SAS program, and are satisfied that it meets all of the syntax requirements discussed above, you can "run" (or "execute") your program by clicking on the "running man" icon SAS execute program icon. For Windows operating systems, the default editor is called the Enhanced Editor, because it gives you a nudge — through the use of differently colored text — if your program contains a syntax error. The Enhanced Editor also allows you to collapse and expand the various steps in your program.
+
+%Log Window. The Log Window displays messages about your SAS session and any programs that you submit. You should always plan on checking this window after running a program. Even though your program may appear to have run correctly, critical errors may still have occurred when reading or manipulating the data. SAS uses the following color-coded system to assist you in reading the log:
+
+%Output Window. The Output Window is where the printable results from your program appear. It is positioned behind the Log and Editor Windows until there is output to display, when it automatically opens or moves to the front of your display. Examples of output that your programs might create include data listings, table summaries, charts, and character-based plots and graphs. If you review the Output Window after running a program and some output that you expected is missing, then double-check the Log Window to see if you had any programming errors that prevented SAS from executing your commands. Note, though, that not all SAS programs create output in the Output Window. If you create HTML output, for example, it can be viewed in the internal SAS browser called the Results Viewer Window. And, if you create a graph, it will appear in a separate Graph Window.
+
+%Explorer Window. The Explorer Window allows you to easily view and manage your SAS files, which are stored in SAS data libraries. We'll learn more about data libraries later. For now, it suffices to know that a library name is just a nickname for the actual location — that is, a folder on your computer — of your SAS files. The Explorer Window can be used to create new SAS libraries and files, to open SAS files, and to move, copy and delete SAS files.
+
+%Results Window. (Note that the Results Window is not the same as the Results Viewer Window described previously.) The Results Window serves much like a table of contents for your Output Window. That is, it itemizes each section of your Output Window in outline form so you can easily jump from one piece of output to another. The Results Window is empty until you submit a SAS program that creates output. Then, it moves to the front of your display. --&gt;
+
+
+---
+
+## Steps: Foundations of SAS programming
+
+* A SAS program consists primarily of a series of *steps* 
+* A step can be one of two kinds: a **.red[data step]** or a **.red[proc step]**. 
+
+--
+
+```r
+
+data myclass;               
+set sashelp.class;               
+run;           
+
+proc print data = myclass;            
+run;
+
+```
+
+--
+
+* A step generally ends with a run statement
+
+* A SAS program can contain any number (0,1,2,...) of data steps and proc steps 
+* The structure will depend on specific goal or task
+  
+???
+Two kinds of steps make up SAS programs: DATA steps and PROC steps. A SAS program can contain any combination of DATA steps and PROC steps depending on what tasks you need to perform. 
+  
+
+---
+
+## Data Step
+
+* The goal of a *data step* in a SAS program is typically to **.red[read, process, or create data.]**
+
+* Definition: A *SAS data set* is a data set that SAS can understand and that can only be created by SAS
+
+* When creating a *SAS data set*, the data step can perform various tasks such as producing new columns/variables.
+
+???
+* The goal of a \textit{data step} in a SAS program is typically to read, process, or create data
+---
+
+
+## Proc Step
+
+* The goal of a *proc step* is typically to **.red[report, manage, or analyze data]**.
+* Thus, a SAS data set is an input to a *proc step*. 
+* There are many unique *proc steps* which accomplish a wide variety of processing tasks. For example,
+  - View a SAS data set
+  - Sort a SAS data set
+  - Summarise features of a SAS data set (means, sums, counts, etc...)
+  - Produce graphics
+
+---
+
+## More on steps
+
+* A step is made up of *statements* (the last of which being a `run` statement...), which are appropriate for that specific step.
+--
+
+* **All statements end with a semicolon!** 
+--
+
+
+```r
+data myclass;
+    set sashelp.class;
+    heightcm=height*2.54;
+run;
+
+proc print data=myclass;
+run;
+
+proc means data=myclass;
+    var age heightcm;
+run;
+```
+
+???
+  A step is made up of a sequence of statements. I like to think of steps as the paragraphs in a program, and statements as the sentences within the paragraphs. 
+
+HIGHLIGHT SEMICOLONS
+
+Steps are like paragraphs and statements are like sentences within the paragraph.
+
+
+---
+
+## Statements
+
+* A SAS program can also contain *global* statements, which appear outside of steps. They don't need a run statement. 
+
+```r
+*title 'My ultra-thorough analysis';
+
+data myclass;
+    set sashelp.class;
+    heightcm=height*2.54;
+run;
+
+proc print data=myclass;
+run;
+
+proc means data=myclass;
+    var age heightcm;
+run;
+
+```
+
+???
+global statements, in general, are not very prevalent in SAS coding. 
+
+---
+
+## Case Study
+
+**Goals**: 
+
+1. Navigate SAS Studio interface. 
+2. Locate pre-loaded data. 
+3. Write program. 
+4. Execute code 2 different ways. 
+5. Examine log and results viewer.
+
+
+???
+
+See: t1_cs_intro.sas:
+
+/*Open SAS Studio, use navigation pane on left to open my libraries. 
+Left panel --&gt; Libraries --&gt; My Libraries --&gt; SASHELP
+SAShelp library has sample data sets. Click class table. 
+
+Progam 1 should already be open, but if it isn't go up to the upper right to open new sas program. 
+
+2 ways to run code: click running man to run everything in script. 
+or, highlight certain parts and click running man OR F3!.
+
+Start by just clicking running man.
+
+code, log, results, output data
+only run proc print - don't get output data. 
+
+that's because we didn't
+create data, we just printed it in that run. */
+
+data myclass;
+    set sashelp.class;
+run;
+
+proc print data=myclass;
+run; 
+
+
+
+---
+background-color: #6495ED
+
+
+# Your Turn
+
+1. View the code. How many steps are in the program? 
+
+  &lt;!-- There are three steps: one DATA step and two PROC steps. --&gt;
+
+2. How many statements are in the PROC PRINT step?  
+
+  &lt;!-- four statements --&gt;
+
+
+```r
+data mycars;
+	set sashelp.cars;
+	AvgMPG=mean(mpg_city, mpg_highway);
+run;
+
+title "Cars with Average MPG Over 35";
+proc print data=mycars;
+	var make model type avgmpg;
+	where AvgMPG &gt; 35;
+run;
+
+title "Average MPG by Car Type";
+proc means data=mycars mean min max maxdec=1;
+	var avgmpg;
+	class type;
+run;
+
+title;
+```
+
+---
+background-color: #6495ED
+
+
+# Your Turn
+
+&lt;ol start="3"&gt;
+&lt;li&gt; How many global statements are in the program?  
+&lt;/ol&gt;
+  &lt;!-- three title statements --&gt;
+
+
+```r
+data mycars;
+	set sashelp.cars;
+	AvgMPG=mean(mpg_city, mpg_highway);
+run;
+
+title "Cars with Average MPG Over 35";
+proc print data=mycars;
+	var make model type avgmpg;
+	where AvgMPG &gt; 35;
+run;
+
+title "Average MPG by Car Type";
+proc means data=mycars mean min max maxdec=1;
+	var avgmpg;
+	class type;
+run;
+
+title;
+```
+
+---
+background-color: #6495ED
+
+
+# Your Turn
+&lt;ol start="4"&gt;
+&lt;li&gt; Run the program and view the log.        
+
+&lt;li&gt; How many observations were read by the PROC PRINT step?  
+&lt;/ol&gt;
+  &lt;!-- 11 observations  --&gt;
+  &lt;!-- p101a03.sas  --&gt;
+
+```r
+data mycars;
+	set sashelp.cars;
+	AvgMPG=mean(mpg_city, mpg_highway);
+run;
+
+title "Cars with Average MPG Over 35";
+proc print data=mycars;
+	var make model type avgmpg;
+	where AvgMPG &gt; 35;
+run;
+
+title "Average MPG by Car Type";
+proc means data=mycars mean min max maxdec=1;
+	var avgmpg;
+	class type;
+run;
+
+title;
+```
+
+---
+## Syntax - Format
+
+.pull-left[
+```r
+data myclass;
+    set sashelp.class;
+run;
+
+proc print data=myclass;
+run;
+
+```
+]
+
+
+.pull-right[
+```r
+data myclass;set sashelp.class;run;
+proc print data=myclass;run;
+
+```
+]
+
+Formatting makes your code easier to read and understand and, thus, easier to de-bug.
+
+
+---
+## Syntax - cAsE
+
+
+```r
+data under13;
+    set sashelp.class;
+    where AGE&lt;13;
+    drop heIGht Weight; 
+run;
+```
+
+
+
+
+```r
+DATA UNDER13;
+    SET SASHELP.CLASS;
+    WHERE AGE&lt;13;
+    DROP HEIGHT WEIGHT; 
+RUN;
+```
+
+*Unquoted values* can be in any case.
+
+---
+
+## Syntax - Comments
+
+* Adding comments to your code makes it more understandable to other people (and your future self!)
+
+* If you "comment something out", SAS will ignore it when you execute the program
+
+* Useful when testing code because you can suppress a portion of the code from execution
+
+* There are two ways to comment in SAS
+  - By putting text between "/\*" and "\*/"
+  - By starting the statement you want to omit with a "\*"
+
+---
+
+## Syntax - Comments
+
+```r
+*/* create new SAS data set containing only
+*students under 13 yo */
+
+data under13;
+set sashelp.class;
+where Age&lt;13;
+**drop Height Weight;
+run;
+
+```
+
+Those three lines will not execute - SAS will ignore them. 
+
+
+???
+
+comments out everything between /* and */ 
+comments out a single statement ending in a semicolon
+
+
+---
+## Errors in SAS
+
+* Misspelled keywords
+* Unmatched quotation marks
+* Missing semicolon
+* Invalid option
+
+--
+
+All of the above are common sources of syntax errors. We all need to get comfortable with errors as they are a fact of (a programmer's) life. 
+
+--
+
+*I get errors every day I program, regardless of language. True story.* 
+
+--
+
+You can catch some errors by paying attention to SAS's color-coded syntax, or, if the code is already run, by diligently examining the log after each execution.
+
+???
+
+How do you know if you have an error? Long right arrow pointing to "Warning or error message in log" 
+
+
+
+---
+background-color: #6495ED
+
+
+# Your Turn
+
+Paste this code into a new SAS editor.
+
+
+```r
+data canadashoes; set sashelp.shoes;
+	where region="Canada;
+	Profit=Sales-Returns;run;
+
+prc print data=canadashoes;run;
+```
+
+1. Format the program to make it easier to read. What syntax error is detected? Fix the error and run the program. 
+
+2. Read the log and identify any additional syntax errors or warnings. 
+3. Add a comment to describe the changes that you made to the program. 
+
+4. Run the program and examine the log and results. How many rows are in the canadashoes data?
+
+5. Save your script in your "Stat 40 Code" folder as t1_yt_errors.sas.
+???
+
+ p101a04.sas in activities folder 
+
+/* Unbalanced quotation mark and
+   misspelled PROC fixed.*/
+
+data canadashoes;
+    set sashelp.shoes;
+    where region="Canada";
+    Profit=Sales-Returns;
+run;
+
+proc print data=canadashoes;
+run;
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

@@ -1,0 +1,257 @@
+
+---
+title: "SAS Data Sets"
+author: "Dr. Lendie Follett"
+date: '`r format(Sys.Date())`'
+output:
+  xaringan::moon_reader:
+      nature:
+        highlightLines: true
+        countIncrementalSlides: false
+      css: [ hygge-duke, tamu-fonts]
+---
+<style type="text/css">
+  .reveal p {
+    text-align: left;
+  }
+  .reveal ul {
+    display: block;
+  }
+  .reveal ol {
+    display: block;
+  }  
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(flair)
+library(kableExtra)
+
+colorize <- function(x, color) {
+  if (knitr::is_latex_output()) {
+    sprintf("\\textcolor{%s}{%s}", color, x)
+  } else if (knitr::is_html_output()) {
+    sprintf("<span style='color: %s;'>%s</span>", color,
+      x)
+  } else x
+}
+
+options(width = 999)
+```
+
+# Data 
+
+* Accessing data is the first step in any SAS programming project. 
+* We will be working with *structured data*, which can easily be read into SAS. 
+
+* Definition: Structured data includes defined <span style="background:blue">rows</span> and columns. You can store structured data in SAS. Oracle, Excel, Hadoop, etc...
+
+<!-- Highlight rows one color, columns another color  -->
+
+```{r, echo=FALSE}
+
+array(".", dim = c(3,4)) %>%
+  kbl() %>%
+  kable_paper() %>%
+  kable_styling() %>%
+   row_spec(2, bold = T, color = "white", background = "blue")
+
+```
+
+Another name for a row of data is an *observation*.
+
+---
+
+# Data 
+
+* Accessing data is the first step in any SAS programming project. 
+* We will be working with *structured data*, which can easily be read into SAS. 
+
+* Definition: Structured data includes defined rows and <span style="background:green">columns</span>. You can store structured data in SAS. Oracle, Excel, Hadoop, etc...
+
+<!-- Highlight rows one color, columns another color  -->
+
+```{r, echo=FALSE}
+
+array(".", dim = c(3,4)) %>%
+  kbl() %>%
+  kable_paper() %>%
+  kable_styling() %>%
+    column_spec(3, bold = T, color = "white", background = "green")
+
+```
+
+Another name for a column is a *variable*.
+
+---
+
+## Anatomy of a SAS data set
+* Once data is read into SAS, it is called a *SAS data set.* 
+* There are two parts to any SAS data set: 
+
+1. a data portion and
+2. a descriptor portion. 
+
+---
+
+## Data Portion
+
+<!-- data values stored in rows and columns (what you imagine when you think "data set") -->
+&nbsp;
+
+If you want to see the data portion, you can use a proc print step.
+```{r, eval=FALSE}
+proc print data = sashelp.iris;
+run;
+```
+
+```{r, eval=TRUE, echo=FALSE}
+
+iris[1:6,] %>%
+  kbl() %>%
+  kable_minimal()
+
+```
+
+---
+## Descriptor portion:
+
+"Metadata" 
+* name of SAS data set
+* number of rows
+* date created
+* column names
+* column attributes 
+
+<!-- metadata: name of data set, number of rows, date created, column names, column attributes -->
+---
+## Descriptor portion
+### Column Attributes
+
+Wait a second, what is a "*column attribute*"? 
+
+* This is something all columns in SAS must have. 
+
+* There are three components. 
+
+  1. Name
+  2. Type
+  3. Length
+---
+
+## Descriptor portion
+### 1. Name: 
+
+
+```{r, eval=TRUE, echo=FALSE}
+
+iris[1:4,] %>%
+  mutate_all(function(x){x = "."})%>%
+  kbl() %>%
+  kable_minimal()
+
+```
+
+--
+
+* Must be 1-32 characters, starts with a letter (a-Z,A-Z) or underscore, only contains: (letters, numbers, underscores), can be uppercase or lowercase or mixed
+
+--
+
+* Examples of valid names: stat40, mylib
+
+--
+
+* Examples of invalid names: 40stat, stat.40
+
+???
+
+stat40, mylib,
+
+40stat are invalid names
+
+---
+
+## Descriptor portion
+### 2. Type: 
+
+Column type is either (1) numeric or (2) character.
+
+```{r, eval=TRUE, echo=FALSE}
+
+iris[1:6,] %>%
+  kbl(align = c("r", "r", "r", "r", "l")) %>%
+  kable_minimal()
+
+```
+
+Columns of type numeric contain digits 0-9, minus sign, decimal points, or scientific notation (E). Dates are also understood as numeric! More on this later...
+
+&nbsp;
+
+Character variables can contain letters, numbers, special characters, and blanks. 
+
+---
+## Descriptor portion
+### 3. Length
+
+* Storage (in bytes) allocated to store column values.
+* This is related to the type. 
+* Numeric columns, by default, area always stored as 8 bytes (enough for ~ 16 digits). 
+* Character can be any length (practically). The length will be set according to how many characters are present in the column and will assume the length of the longest string. 
+
+---
+## Descriptor portion
+### So, you want to see the descriptor portion?
+
+
+If you want to see the descriptor portion (which, if you recall, includes the column attributes), you can use a proc contents step. This is a new one!
+
+```{r, eval=FALSE}
+
+proc contents data = sashelp.shoes;
+run;
+
+```
+
+---
+## Case Study
+
+sashelp.heart contains data from the Framingham heart study. Let's identify the data portion and the descriptor portion, paying special attention to the column attributes. 
+
+```{r, eval=FALSE}
+
+proc print data = sashelp.heart;
+run;
+
+proc contents data = sashelp.heart;
+run;
+
+```
+
+---
+background-color: #6495ED
+
+
+# Your Turn
+
+
+In the heart data, how are missing character values represented in the data? What about missing numeric values? 
+
+---
+
+## Where have we been
+
+
+* We know how a SAS data set is structured
+* We know how to learn about the descriptor portion
+
+--
+
+## Where we are going
+
+* SAS libraries
+
+

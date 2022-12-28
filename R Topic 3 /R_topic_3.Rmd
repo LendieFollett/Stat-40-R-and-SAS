@@ -1,0 +1,575 @@
+
+---
+title: "Data Manipulation and Summarization"
+author: "Dr. Lendie Follett"
+date: 'Fall 2022'
+output:
+  xaringan::moon_reader:
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      highlightSpans: true
+      ratio: "16:9"
+    includes:
+        after_body: insert-logo.html
+
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+xaringanExtra::use_scribble()
+
+library(dplyr)
+library(flair)
+library(kableExtra)
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+```
+
+
+## Where we've been
+
+* Basic calculations
+* Function use on vectors, scalars
+* Introductory data visualizations
+
+--
+
+## Where we're going
+
+* Logical subsetting rows of data
+* Subsetting columns of data
+* Creating new columns
+* Ordering data
+* Summarizing data
+---
+
+## Packages we'll use
+```{r ggplot2_install,eval=FALSE, echo=TRUE}
+#Install packages
+#Recall, you only have to do this once (so I'm omitting ggplot2)
+install.packages("dplyr")
+```
+
+```{r}
+#Load packages
+library(ggplot2)#data visualization
+library(dplyr) #data manipulation
+```
+
+---
+## The dplyr framework
+This is a rich package used extensively in industry for data cleaning and manipulation (With the end goal of turning that data into knowledge!!!). If you google `dplyr`, you will find the following:
+
+"dplyr is a grammar of data manipulation, providing a consistent set of verbs that help you solve the most common data manipulation challenges:
+
+* `mutate()` adds new variables that are functions of existing variables
+* `select()` picks variables based on their names.
+* `filter()` picks cases based on their values.
+* `summarise()` reduces multiple values down to a single summary.
+* `arrange()` changes the ordering of the rows."
+
+We'll also be using `group_by()`, which is a power-house for data summarizing!
+
+--
+
+We will learn how to use each of these functions to accomplish common goals. 
+
+---
+## Creating new columns in your data
+
+There are two ways to do this. One old school (but perfectly acceptable) and one using `dplyr`. Best to learn with an example. 
+--
+
+#### Old school
+* Use `$` syntax to specify ownership of new variable
+* Use `<-` or `=` syntax to signify assignment of variable
+```{r}
+# Calculate cost value per carat
+diamonds$cost_per_carat <- diamonds$price/diamonds$carat
+
+```
+
+???
+Recall the diamonds data. In this data set we have the cost of the diamond, but note that these diamonds are all of varying sizes. What if we're actually more interested in a standardized-cost? Such as cost per carat? In that case, we'll have to create a new variable/column in our dataset that has the information we'll need. There are two ways to do this. 
+
+
+--
+#### mutate() from dplyr
+* Use `<-` or `=` syntax to signify assignment: this time, though, we're over-writing the entire diamonds with a new version of diamonds that has a new variable `cost_per_carat`.
+* Do **not** use `$` within `mutate()`. Just don't do it...
+```{r}
+# Calculate cost value per carat
+diamonds <- mutate(diamonds, 
+                   cost_per_carat = price/carat)
+
+```
+
+
+
+---
+## So what method should we use?
+
+* I don't really care. 
+
+--
+
+* However, `mutate()` is considered more "modern" and may help simplify more complicated coding scripts. 
+
+--
+
+
+* This is largely because 
+1. You don't use the `data_name$` notation every time you call a variable and
+2. You can create multiple variables within the same `mutate()` function. 
+
+---
+## So what method should we use? Example:
+
+```{r, eval=FALSE}
+# Calculate cost value per carat AND carat rounded to the nearest lower integer
+diamonds <- mutate(diamonds, 
+                   cost_per_carat = price/carat`,`
+                   nearest_carat = floor(carat))
+#note: you separate the different tasks with a comma
+
+```
+
+vs
+
+```{r, eval=FALSE}
+diamonds$cost_per_carat = diamonds$price/diamonds$carat
+diamonds$nearest_carat = floor(diamonds$carat)
+#note: no comma, but you have to be specific about ownership (via "diamonds$")
+```
+
+--
+Either way, you'll get the same thing (below), but there is something to be said about code readability and efficient programming.
+
+```{r,echo=FALSE}
+diamonds <- mutate(diamonds, 
+                   cost_per_carat = price/carat,
+                   nearest_carat = floor(carat))
+head(diamonds,4)%>%
+  kbl() %>%
+    kable_paper(bootstrap_options = "striped", full_width = F) %>%
+    column_spec(11:12,  background = "yellow")
+
+
+```
+
+---
+
+## Selecting/subsetting columns from your data
+
+* Recall in SAS we used the `keep`/`drop` statements to create a new data set with/without a specified selection of variables. 
+* In R, there are again a few ways to do this. We'll focus on the `select()` function. 
+
+```{r}
+#create new data frame called diamonds_sub
+#only contains carat, cut, and price
+diamonds_sub <- select(diamonds, carat, cut, price)
+#note: the first argument is the data frame. All the rest are the VERBATIM names of columns you want. 
+head(diamonds_sub, 3)
+```
+
+
+???
+It’s not uncommon to get datasets with hundreds or even thousands of variables - most of them irrelevant. In this case, the first challenge is often narrowing in on the variables you’re actually interested in. select() allows you to rapidly zoom in on a useful subset using operations based on the names of the variables.
+
+---
+
+
+## Selecting/subsetting columns from your data
+
+
+```{r}
+#create new data frame called diamonds_sub
+#only contains variables between carat and price, inclusive
+diamonds_sub <- select(diamonds, carat:price)
+#note: this is dependent on the ordering of your variables
+head(diamonds_sub, 3)
+
+```
+---
+
+
+## Selecting/subsetting columns from your data
+
+```{r}
+#create new data frame called diamonds_sub
+#only contains variables THAT ARE NOT between carat and price, inclusive
+diamonds_sub <- select(diamonds, -(carat:price))
+#note: the negative sign means we don't want those guys.
+head(diamonds_sub, 3)
+
+```
+
+---
+
+## Selecting/subsetting columns from your data
+
+
+```{r}
+diamonds_sub <- select(diamonds, starts_with("c", ignore.case=TRUE))
+#what does this do? What does ignore.case = TRUE do?
+head(diamonds_sub, 3)
+
+#see:
+?starts_with
+
+```
+
+---
+
+## Selecting/subsetting columns from your data
+
+* `starts_with()` provided an easy way to select all variables that start with some specified string. 
+* Also see:
+  - `ends_with()`:  Ends with a suffix.
+  - `contains()`: Contains a literal string anywhere in the name.
+  - `matches()`: Matches a regular expression. 
+  - `num_range()`: Matches a numerical range like x01, x02, x03
+
+* Use documentation (e.g., `?num_range()`) for details and examples of how to use these helper functions.
+
+---
+## Selecting/subsetting rows from your data
+* Recall in SAS we used the `where` statement to subset rows conditionally. We can do the same thing in R using `filter()`.
+* Here are some examples using logical operators. 
+* If you need a refresher, see the slide titled "Logical Operators" in R Topic 1 slides
+
+```{r}
+
+expensive_ones <- filter(diamonds, price > 10000)
+good_color <- filter(diamonds, color %in% c("D", "E", "F"))
+poor_quality <- filter(diamonds, color == "J" | cut == "Fair" )
+really_poor_quality <- filter(diamonds, color == "J" & cut == "Fair")
+over_priced <- filter(diamonds, price/carat > 5000 )
+#Notice how I use "|" for OR and "&" for AND
+```
+
+
+---
+## Selecting/subsetting rows from your data
+* At this time it's good to note that dplyr functions never modify their input (above, diamonds). Thus, if you want to save your results, you have to use the assignment operator `<-` or `=` to save a new object. 
+* For example, the following code effectively *does nothing* but prints the results to the console. 
+
+
+```{r, eval=FALSE}
+
+filter(diamonds, price > 10000)
+
+```
+
+--
+
+As we've seen, you have to *assign* if you want to actually create something. e.g., 
+
+```{r, eval=FALSE}
+
+cant_afford_it <- filter(diamonds, price > 10000)
+
+```
+---
+
+## Summarising your data
+
+* In SAS we used `proc means` to calculate summary statistics (mean, standard deviation, min, max, etc...) from our data. 
+* Often, we did this within each unique level of one or more categorical variables. 
+* We can do similar things in R with `summarise()`
+
+--
+
+* Here's the simplest example (silly-simple, really):
+
+```{r}
+mean_prices <- summarise(diamonds, mean = mean(price))
+mean_prices
+```
+
+That's great, but is unlikely to impress anyone.
+---
+
+
+## Hold that thought! Missing value weirdness  
+
+Remember in SAS, character missing values were represented by " " while numeric missing values were represented by a period. In R, we have a more formal conceptualization of an unknown value - `NA`. You will see this in your R data frame where cells are missing.
+
+```{r}
+
+NA > 5
+
+10 == NA
+
+NA + 10
+
+NA / 2
+```
+
+--
+Okay, fair enough. 
+
+---
+## Missing value weirdness  
+```{r}
+NA == NA
+```
+--
+
+
+Here's an example from R4DS:
+```{r}
+# Let x be Mary's age. We don't know how old she is.
+x <- NA
+
+# Let y be John's age. We don't know how old he is.
+y <- NA
+
+# Are John and Mary the same age?
+x == y
+#> [1] NA
+# We don't know!
+```
+## Misssing values
+---
+If you want to determine if a value is missing, use `is.na()`:
+```{r}
+is.na(x)
+x <- 25 #overwrite x, say now we know Mary is 25 years old
+is.na(x)
+
+```
+
+
+---
+## Missing values 
+For some data-frame context, say we have the following data frame. 
+```{r, echo=FALSE}
+
+messy_data <- data.frame(
+  animals = as.factor(c("cat", "dog", "hampster", "unicorn", "iguana")),
+  exist = c(TRUE, TRUE, TRUE, FALSE, TRUE),
+  size = as.factor(c("small", "medium", NA, "huge", "small")), 
+  population = c(40, 40, 12, 0, NA)
+  )
+```
+
+```{r}
+messy_data
+#Note: 0 is NOT a missing value. Also: a missing value is NOT necessarily 0.
+
+```
+---
+## Missing value weirdness 
+Often, we'll want to subset/filter our data based on missing values. We might use `filter()` to do this:
+
+
+```{r}
+has_size_missings <- filter(messy_data, is.na(size))
+has_any_missing <- filter(messy_data ,is.na(size) | is.na(population))
+```
+
+
+Additionally, note that `summary()` gives you descriptive stats about missingness:
+```{r}
+summary(messy_data)
+```
+
+Finally, see the function `complete.cases()`. Though, I warn against using this function too liberally. 
+---
+## Back to it: Summarising your data
+
+Question: what if we try to summarise a numeric column that has missing values in it? We will get NA if we perform any mathematical summary on a vector containing a NA. 
+
+```{r}
+x <- c(2.5, 6.7, NA, 9.0, 2.1)
+mean(x)
+mean(x, na.rm=TRUE)
+
+```
+
+We can add `na.rm=TRUE` to tell R to fully ignore any NA values before starting the calculation! This is an argument in most numeric summary functions. 
+---
+## Summarising your data
+
+As I said before, `mean_prices <- summarise(diamonds, mean = mean(price))`, is a perfectly correct piece of code. But it's not that practical. In real life, we'll likely want to group data up and *then* perform summaries, to see how traits vary across the groups. For example, suppose our goal is to see how diamond price is associated with cut, on average.
+
+```{r, message=FALSE}
+#Step one: group your data
+cut_grouped <- `group_by`(diamonds, cut)
+
+#Step two: summarise the grouped *diamonds* data
+cut_price_means <- summarise(cut_grouped, mean_price = mean(price, na.rm=TRUE))
+cut_price_means
+
+```
+---
+## Summarising your data
+
+* The key to getting summaries within categories is the `group_by()` function. 
+* You can group by multiple categorical variables, too!
+* Just list those variable names (VERBATIM) after the name of your data, separated by commas
+
+```{r, message=FALSE}
+#Step one: group your data
+grouped <- group_by(diamonds, cut, color)
+
+#Step two: summarise the grouped *diamonds* data
+price_means <- summarise(grouped, mean_price = mean(price, na.rm=TRUE))
+price_means
+
+```
+
+---
+## Summarising your data
+
+Remember, it's the *grouped* object that you feed to `summarise()`.
+
+--
+
+## `group_by()` `r emo::ji("heart")` `summarise()`
+
+--
+
+*Related but not likely important for your future*: Want to make emojis? Install the `emo` package via `devtools::install_github("hadley/emo")`. `r emo::ji("cat")``r emo::ji("smile")`
+
+
+---
+
+## Summarising your data
+### Counts
+
+* Count number of observations within groups
+
+```{r, message=FALSE}
+#Step one: group your data
+grouped <- group_by(diamonds, cut)
+
+#Step two: summarise the grouped *diamonds* data
+counts_by_cut <- summarise(grouped, count = n())
+counts_by_cut
+
+```
+
+---
+## Summarising your data
+### Counts
+
+**Question**: How do the following compare in terms of questions they answer? Why might you want to use one over the other? What are the benefits of both methods?
+.pull-left[
+```{r, out.width="60%",out.height="40%"}
+ggplot(data = diamonds) +
+  geom_bar(aes(x = cut)) 
+#rookie plot, i know. title? labels?
+```
+]
+.pull-right[
+
+```{r}
+counts_by_cut
+```
+]
+---
+## Summarising your data
+
+Usually it's not one calculation you'll need to do, but multiple.
+
+```{r, message=FALSE}
+#Step one: group your data
+grouped <- group_by(diamonds, cut)
+
+#Step two: summarise the grouped *diamonds* data
+summary_by_cut <- summarise(grouped, 
+                            count = n(),
+                            mean_price = mean(price, na.rm=TRUE),
+                            mean_carat = mean(carat, na.rm=TRUE))
+summary_by_cut
+
+```
+Note the commas separating the *three summarizations done*. We've seen something similar when we created multiple variables simultaneously in `mutate()`.
+
+---
+## Summarising your data
+
+If visualizations are your thing (and I can't imagine why they wouldn't be) you can take those summarized objects and plot them!
+.pull-left[
+```{r, out.width="60%",out.height="60%", eval=FALSE}
+ggplot(data = summary_by_cut) +
+  geom_col(aes(x = cut, y = mean_price, fill = cut)) + #geom_col?
+  scale_fill_viridis_d("Cut")+ #what does this do?
+  theme_bw()+ #what does this do? +
+  labs(x = "Cut Category", y = "Average Price (US Dollar $)")
+```
+]
+.pull-right[
+
+```{r, out.width="50%",out.height="50%",echo=FALSE}
+ggplot(data = summary_by_cut) +
+  geom_col(aes(x = cut, y = mean_price, fill = cut)) + #geom_col?
+  scale_fill_viridis_d("Cut")+ #what does this do?
+  theme_bw()+ #what does this do? +
+  labs(x = "Cut Category", y = "Average Price (US Dollar $)")
+```
+
+]
+
+I used three potentially new functions here. What do they do? Find out!
+```{r}
+?geom_col #how is it different from geom_bar?
+?scale_fill_viridis_d #what does this have to do with inclusivity?
+?theme_bw #i just like this :)
+```
+
+---
+
+class: show-only-last-code-result
+
+## Sorting data
+
+Change the ordering of rows in your data. Suppose I want to investigate a few of the most expensive diamonds. An easy way to do that would be to order `diamonds` by price. 
+
+```{r, eval=TRUE}
+
+diamonds_ordered <- `arrange`(diamonds, price)
+head(diamonds_ordered)
+
+#hmmmm, these appear to be the least expensive
+#Use the desc() function to order by *descending* price
+```
+---
+## Sorting data
+
+Change the ordering of rows in your data. Suppose I want to investigate a few of the most expensive diamonds. An easy way to do that would be to order `diamonds` by price. 
+
+```{r}
+
+diamonds_ordered <- arrange(diamonds, `desc`(price))
+head(diamonds_ordered, 10)
+
+```
+
+--
+
+The 10 most expensive tend to be large in size (2 carats or more, usually!), with good color and moderately-good clarity.
+
+---
+## What have we done?!
+
+Phew, that was a lot. Here's what we have covered:
+
+* Logical subsetting rows of data (`filter`)
+* Subsetting columns of data (`select`)
+* Creating new columns (`mutate`)
+* Ordering data (`arrange`)
+* Summarizing data (`group_by` and `summarise`)
+* A bit more data visualization (ggplot2)
+

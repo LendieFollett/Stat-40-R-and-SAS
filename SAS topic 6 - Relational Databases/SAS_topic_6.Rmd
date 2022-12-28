@@ -1,0 +1,635 @@
+---
+title: "Relational Databases"
+author: "Dr. Lendie Follett"
+date: '`r format(Sys.Date())`'
+output:
+  xaringan::moon_reader:
+      nature:
+        highlightStyle: github
+        highlightLines: true
+        countIncrementalSlides: false
+      css: [default, hygge-duke, tamu-fonts]
+---
+
+
+<style type="text/css">
+  .reveal p {
+    text-align: left;
+  }
+  .reveal ul {
+    display: block;
+  }
+  .reveal ol {
+    display: block;
+  }  
+</style>
+
+
+## Combining multiple data sources
+
+* Often (usually) the analyses you encounter will require the use of multiple sources of data. 
+* For future discussions, we may refer to datasets (SAS) and data frames (R) simply as tables.
+* The collection of multiple tables are called \textbf{relational data} because it's the relationships between the data sets that convey the meaningful information needed to complete an analysis.
+
+
+---
+
+## Introduction to set theory
+
+* It will be helpful to think of the relationships between tables in terms of verbs used in set theory
+* A **set** is a collection of elements.
+  - $L = \{1,2,3,4\}$: "Set L contains elements $1,2,3$ and $4$"
+  - $R = \{1,3,5,6,7\}$: "Set R contains elements $1,3,5,6$, and $7$"
+  
+--
+  
+* Why do we talk about set theory in a programming class?
+
+--
+
+  - It is useful to view tables as sets containing observations. 
+
+
+
+
+---
+## Introduction to set theory
+
+.pull-left[
+```{tikz, fig.cap = " ", fig.ext = 'png',eval=TRUE,echo=FALSE}
+\def\firstcircle{(0,0) circle (1.5cm)}
+\def\secondcircle{(0:2cm) circle (1.5cm)}
+
+\colorlet{circle edge}{blue!50}
+\colorlet{circle area}{blue!20}
+
+\tikzset{filled/.style={fill=circle area, draw=circle edge, thick},
+outline/.style={draw=circle edge, thick}}
+
+\begin{tikzpicture}
+\begin{scope}
+    %\clip \firstcircle;
+        \fill[filled] \firstcircle;
+    \fill[filled] \secondcircle;
+\end{scope}
+\draw[outline] \firstcircle node {$L$};
+\draw[outline] \secondcircle node {$R$};
+\node[anchor=south] at (current bounding box.north) {$L \cup R$};
+\end{tikzpicture}
+```
+]
+.pull-right[
+* The **union** of L and R is the set that contains the elements that are either members of L or members of R or members of both L and R.
+]
+
+---
+## Introduction to set theory
+
+.pull-left[
+```{tikz, fig.cap = " ", fig.ext = 'png', eval=TRUE, echo=FALSE}
+\def\firstcircle{(0,0) circle (1.5cm)}
+\def\secondcircle{(0:2cm) circle (1.5cm)}
+
+\colorlet{circle edge}{blue!50}
+\colorlet{circle area}{blue!20}
+
+\tikzset{filled/.style={fill=circle area, draw=circle edge, thick},
+outline/.style={draw=circle edge, thick}}
+
+\begin{tikzpicture}
+\begin{scope}
+    \clip \firstcircle;
+    \fill[filled] \secondcircle;
+\end{scope}
+\draw[outline] \firstcircle node {$L$};
+\draw[outline] \secondcircle node {$R$};
+\node[anchor=south] at (current bounding box.north) {$L \cap R$};
+\end{tikzpicture}
+
+```
+]
+.pull-right[
+
+* The **intersection** of L and R is the set that contains elements that are members of both L and R.
+
+]
+
+
+---
+
+## Keys
+
+* In terms of tables, *membership* is determined by one or more **key** variables (columns). There are two types of keys. In RDS (Wickham), these are defined as:
+
+  *  A **primary** key is one or more variables which can uniquely identify an observation in a table.
+  *  A **foreign** key uniquely identifies an observation in another table. 
+
+*  A relation between a pair of tables is formed by matching **primary keys** and corresponding **foreign keys**.
+
+
+
+
+---
+## Key Examples
+
+Identifying .yellow[primary keys] and .blue[foreign keys].
+
+
+```{r, echo=FALSE, size = "tiny"}
+library(kableExtra)
+
+student <- data.frame(
+    student_id = c("6422","3730","5792","9078"),
+    last = c("Jones", "Johnson", "Johnson", "Ma"),
+    club = rep("stat", 4)
+) 
+
+gpa <- data.frame(
+  student_id =c("9382","6422", "3730","5792"),
+  gpa = c( 3.3, 3.7, 2.9, 4.0),
+  major = c("Stat","Stat","Math", "Comp Sci")
+)
+
+major <- data.frame(
+   major = c("Stat","Math", "Comp Sci", "Mgmt"),
+   college = c("LAS", "LAS", "LAS", "Business")
+)
+
+
+
+#kable(list(student, gpa))
+kable(student, caption = "data set: club") %>%
+  kable_styling(full_width = FALSE, position = "float_left")%>%
+    column_spec(1,  background = "yellow")
+
+kable(gpa, caption = "data set: gpa") %>%
+  kable_styling(full_width = FALSE, position = "left")%>%
+    column_spec(1,  background = "yellow")%>%
+    column_spec(3,  background = "blue")
+
+kable(major, caption = "data set: major")%>%
+    column_spec(1,  background = "yellow")
+```
+???
+In simple cases (like the one illustrated), a single variable is enough to identify an observation. 
+
+For example, in the stat club data set, the student id variable is sufficient to identify a row of data. Thus it is a primary key. 
+
+Likewise for the gpa dataset. 
+
+major is a primary key for the major dataset. It is a foreign key for the gpa dataset!
+
+---
+
+## Joins
+
+*  Joins combine a pair of tables (say, table L and table R) based matching keys to form a single table (say, X). 
+*  The resulting table, X, will contain variables from both tables. The observations present in X depend on the **join type**.
+*  There are several types of joins. We will cover:
+
+  *  Inner join
+  *  Left join
+  *  Right join
+  *  Full join
+
+*  The correct type of join will depend on the particular goal.
+
+
+---
+
+
+## Inner Join
+```{tikz, fig.cap = " ", fig.ext = 'png', eval=TRUE, echo=FALSE}
+\def\firstcircle{(0,0) circle (1.5cm)}
+\def\secondcircle{(0:2cm) circle (1.5cm)}
+
+\colorlet{circle edge}{blue!50}
+\colorlet{circle area}{blue!20}
+
+\tikzset{filled/.style={fill=circle area, draw=circle edge, thick},
+outline/.style={draw=circle edge, thick}}
+
+\begin{tikzpicture}
+\begin{scope}
+    \clip \firstcircle;
+    \fill[filled] \secondcircle;
+\end{scope}
+\draw[outline] \firstcircle node {$L$};
+\draw[outline] \secondcircle node {$R$};
+\node[anchor=south] at (current bounding box.north) {$L \cap R$};
+\end{tikzpicture}
+```
+
+* Match observations for all matching pairs of keys.
+* Important characteristic: observations corresponding to unmatched keys are **not included in the resulting table**.
+
+???
+
+Set theory analogy: intersection
+---
+class: middle, center
+## Need GPAs of stat club members
+
+---
+## Inner Join
+
+```{r, echo=FALSE, size = "tiny"}
+library(kableExtra)
+
+student <- data.frame(
+    student_id = c("6422","3730","5792","9078"),
+    last = c("Jones", "Johnson", "Johnson", "Ma"),
+    club = rep("stat", 4)
+) 
+
+gpa <- data.frame(
+  student_id =c("9382","6422", "3730","5792"),
+  gpa = c( 3.3, 3.7, 2.9, 4.0),
+  major = c("Stat","Stat","Math", "Comp Sci")
+)
+
+major <- data.frame(
+   major = c("Stat","Math", "Comp Sci", "Mgmt"),
+   college = c("LAS", "LAS", "LAS", "Business")
+)
+
+
+
+#kable(list(student, gpa))
+kable(student, caption = "data set: club") %>%
+  kable_styling(full_width = FALSE, position = "float_left")%>%
+    row_spec(c(1,2,3),  background = "green")
+
+kable(gpa, caption = "data set: gpa") %>%
+  kable_styling(full_width = FALSE, position = "left")%>%
+    row_spec(c(2,3,4),  background = "green")
+
+merge(student, gpa, all.x = FALSE, all.y = FALSE) %>%kable( caption = "data set: inner")
+```
+---
+
+
+
+## Left Join
+```{tikz, fig.cap = " ", fig.ext = 'png', eval=TRUE, echo=FALSE}
+\def\firstcircle{(0,0) circle (1.5cm)}
+\def\secondcircle{(0:2cm) circle (1.5cm)}
+
+\colorlet{circle edge}{blue!50}
+\colorlet{circle area}{blue!20}
+
+\tikzset{filled/.style={fill=circle area, draw=circle edge, thick},
+outline/.style={draw=circle edge, thick}}
+
+\begin{tikzpicture}
+\begin{scope}
+    %\clip \firstcircle;
+    \fill[filled] \firstcircle;
+\end{scope}
+\draw[outline] \firstcircle node {$L$};
+\draw[outline] \secondcircle node {$R$};
+\node[anchor=south] at (current bounding box.north) {$L$};
+\end{tikzpicture}
+```
+
+
+*  For each observation in $L$, look for matching key in $R$.
+*  Keeps all observations in $L$.
+
+
+---
+class: middle, center
+## Add GPA information, wherever possible, to the Stat club member table
+
+---
+## Left join
+```{r, echo=FALSE, size = "tiny"}
+library(kableExtra)
+
+student <- data.frame(
+    student_id = c("6422","3730","5792","9078"),
+    last = c("Jones", "Johnson", "Johnson", "Ma"),
+    club = rep("stat", 4)
+) 
+
+gpa <- data.frame(
+  student_id =c("9382","6422", "3730","5792"),
+  gpa = c( 3.3, 3.7, 2.9, 4.0),
+  major = c("Stat","Stat","Math", "Comp Sci")
+)
+
+major <- data.frame(
+   major = c("Stat","Math", "Comp Sci", "Mgmt"),
+   college = c("LAS", "LAS", "LAS", "Business")
+)
+
+options(knitr.kable.NA = "")
+
+#kable(list(student, gpa))
+kable(student, caption = "data set: club") %>%
+  kable_styling(full_width = FALSE, position = "float_left")%>%
+    row_spec(c(1,2,3,4),  background = "green")
+
+kable(gpa, caption = "data set: gpa") %>%
+  kable_styling(full_width = FALSE, position = "left")%>%
+    row_spec(c(2,3,4),  background = "green")
+
+merge(student, gpa, all.x = TRUE, all.y = FALSE) %>%kable( caption = "data set: left")
+```
+
+---
+## Right Join
+```{tikz, fig.cap = " ", fig.ext = 'png', eval=TRUE, echo=FALSE}
+\def\firstcircle{(0,0) circle (1.5cm)}
+\def\secondcircle{(0:2cm) circle (1.5cm)}
+
+\colorlet{circle edge}{blue!50}
+\colorlet{circle area}{blue!20}
+
+\tikzset{filled/.style={fill=circle area, draw=circle edge, thick},
+outline/.style={draw=circle edge, thick}}
+\begin{tikzpicture}
+\begin{scope}
+    %\clip \firstcircle;
+    \fill[filled] \secondcircle;
+\end{scope}
+\draw[outline] \firstcircle node {$L$};
+\draw[outline] \secondcircle node {$R$};
+\node[anchor=south] at (current bounding box.north) {$R$};
+\end{tikzpicture}
+```
+
+
+* For each observation in $R$, look for matching key in $L$.
+* Keeps all observations in $R$.
+
+---
+
+class: middle, center
+## Identify whether students in GPA table are stat club members
+
+---
+## Right join
+```{r, echo=FALSE, size = "tiny"}
+library(kableExtra)
+
+student <- data.frame(
+    student_id = c("6422","3730","5792","9078"),
+    last = c("Jones", "Johnson", "Johnson", "Ma"),
+    club = rep("stat", 4)
+) 
+
+gpa <- data.frame(
+  student_id =c("9382","6422", "3730","5792"),
+  gpa = c( 3.3, 3.7, 2.9, 4.0),
+  major = c("Stat","Stat","Math", "Comp Sci")
+)
+
+major <- data.frame(
+   major = c("Stat","Math", "Comp Sci", "Mgmt"),
+   college = c("LAS", "LAS", "LAS", "Business")
+)
+
+options(knitr.kable.NA = "")
+
+#kable(list(student, gpa))
+kable(student, caption = "data set: club") %>%
+  kable_styling(full_width = FALSE, position = "float_left")%>%
+    row_spec(c(1,2,3),  background = "green")
+
+kable(gpa, caption = "data set: gpa") %>%
+  kable_styling(full_width = FALSE, position = "left")%>%
+    row_spec(c(1,2,3,4),  background = "green")
+
+merge(student, gpa, all.x = FALSE, all.y = TRUE) %>%kable( caption = "data set: right")
+```
+---
+## Full Join
+
+```{tikz, fig.cap = " ", fig.ext = 'png', eval=TRUE, echo=FALSE}
+\def\firstcircle{(0,0) circle (1.5cm)}
+\def\secondcircle{(0:2cm) circle (1.5cm)}
+
+\colorlet{circle edge}{blue!50}
+\colorlet{circle area}{blue!20}
+\tikzset{filled/.style={fill=circle area, draw=circle edge, thick},
+outline/.style={draw=circle edge, thick}}
+\begin{tikzpicture}
+\begin{scope}
+    %\clip \firstcircle;
+    \fill[filled] \firstcircle;
+        \fill[filled] \secondcircle;
+\end{scope}
+\draw[outline] \firstcircle node {$L$};
+\draw[outline] \secondcircle node {$R$};
+\node[anchor=south] at (current bounding box.north) {$L \cup R$};
+\end{tikzpicture}
+```
+
+* Match keys wherever possible.
+* Keeps all observations in $L$ and keeps all observations in $R$.
+???
+set theory analogy: union
+
+---
+class: middle, center
+## I want to know information about any student who is either in stat club or in the GPA table
+
+---
+## Full Join
+```{r, echo=FALSE, size = "tiny"}
+library(kableExtra)
+
+student <- data.frame(
+    student_id = c("6422","3730","5792","9078"),
+    last = c("Jones", "Johnson", "Johnson", "Ma"),
+    club = rep("stat", 4)
+) 
+
+gpa <- data.frame(
+  student_id =c("9382","6422", "3730","5792"),
+  gpa = c( 3.3, 3.7, 2.9, 4.0),
+  major = c("Stat","Stat","Math", "Comp Sci")
+)
+
+major <- data.frame(
+   major = c("Stat","Math", "Comp Sci", "Mgmt"),
+   college = c("LAS", "LAS", "LAS", "Business")
+)
+
+options(knitr.kable.NA = "")
+
+#kable(list(student, gpa))
+kable(student, caption = "data set: club") %>%
+  kable_styling(full_width = FALSE, position = "float_left")%>%
+    row_spec(c(1,2,3,4),  background = "green")
+
+kable(gpa, caption = "data set: gpa") %>%
+  kable_styling(full_width = FALSE, position = "left")%>%
+    row_spec(c(1,2,3,4),  background = "green")
+
+merge(student, gpa, all.x = TRUE, all.y = TRUE) %>%kable( caption = "data set: full")
+```
+---
+## Before we begin...
+
+* Real data is messy.
+* If the key being used to merge is a character string, make sure values are spelled consistently across data sets. 
+  * e.g., "a7392" and "A7392" will NOT match in a merge/join.
+* If key is a character string that involves all numeric characters, make sure leading 0s haven't been lost. 
+  * e.g., in Excel, a value of 00073615 will be automatically converted to 73615. If the data was manipulated in Excel before imported to R and SAS, this could present an issue.
+  
+  
+---
+## Joins in SAS  
+  
+* Typically, we create a single SAS data set from another single SAS data set using the `set` statement
+within a data step. e.g,
+
+```r
+data work.club;
+  set s40dat.club;
+run;
+```
+
+--
+
+* We can replace that with a `merge` statement to accomplish joining two (or more) SAS data sets.
+
+```r
+data work.merged;
+*  merge s40dat.club s40dat.gpa;
+   by student_id;
+run;
+```
+--
+* The merge statement will be used in conjunction with a `by` statement that species the common key variable(s).
+
+---
+## Joins in SAS
+
+
+* SAS requires that input data sets be sorted by the common key variable(s) prior to the join.
+
+* Thus, your code sequence may look *something* like:
+
+```r
+/*Sort both data sets by key(s)*/
+proc sort data = data-x;
+by list-key(s);
+run;
+
+proc sort data = data-y;
+by list-key(s);
+run;
+
+/*Perform merge*/
+data output-data ;
+merge data-x<(in = idxx )> data-y<(in = idxy )>;
+by list-key(s) ;
+<if expression-involving-idxs >;
+run;
+```
+
+* Finally, the type of join can be determined using the `in =` data set option (this is new to us) along with an appropriate subsetting if statement (also new to us).
+
+---
+## Wait, what was that about `in = `?
+
+* The `merge` statement will ask SAS to perform a full join. Always. 
+* We can perform other types of joins by removing certain observations based on membership. 
+* The in = data set option creates a temporary binary (0/1)
+variable indicating whether the observation was a member of that particular data set.
+* Then, we can use those temporary variables (named idxx
+and idxy in the below example) to subset and thus perform
+the correct join.
+* We subset using the `if` statement, which can be used just as we used the `where` statement.
+```r
+/*Perform merge*/
+data output-data ;
+merge data-x<(in = idxx )> data-y<(in = idxy )>;
+by list-key(s) ;
+<if expression-involving-idxs >;
+run;
+```
+---
+## Joins in SAS
+
+In each of the following merges, we create temporary, binary variables that we name a and b. Then, we use these to filter (or not!) observations from the full join to create an inner, full, left, or right join.
+
+.pull-left[
+```r
+/*inner join*/
+data merged_data;
+merge student(in = a) gpa(in = b);
+by student_id;
+*if a and b;
+run;
+```
+]
+.pull-right[
+```r
+/*full join*/
+data merged_data;
+merge student(in = a) gpa(in = b);
+by student_id;
+*/*NO IF STATEMENT! (keep all observations)*/
+run;
+```
+]
+
+.pull-left[
+```r
+/*left join*/
+data merged_data;
+merge student(in = a) gpa(in = b);
+by student_id;
+*if a;
+run;
+```
+]
+.pull-right[
+```r
+/*right join*/
+data merged_data;
+merge student(in = a) gpa(in = b);
+by student_id;
+*if b;
+run;
+```
+]
+
+---
+## Case Study
+
+*Have*: A data set containing NFL draft results. A separate data set containing combine results of college football players. 
+
+*Want*: Find meaningful associations between combine results and draft results. Essentially, what athletic measurements are most important for a desirable draft outcome?
+
+---
+
+## Case Study
+### Football data: Player stats
+A data set containing combine results (various athletic measurements) of college football players from 1999 to 2015. 
+```{r, echo=FALSE}
+
+player_stats <- read.csv("Case Studies/Combine Results 1999-2015.csv")
+
+head(player_stats) %>% kable()  %>%
+  kable_styling(font_size = 10)
+  
+
+```
+
+---
+## Case Study
+### Football data: Draft results
+A data set containing draft results from 1999 to 2015
+```{r, echo=FALSE}
+
+draft_results <- read.csv("Case Studies/Draft Results 1999-2015.csv")
+
+head(draft_results) %>% kable()  %>%
+  kable_styling(font_size = 10)
+```
+

@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Data Manipulation and Summarization</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr. Lendie Follett" />
+    <script src="R_topic_3_files/header-attrs-2.14/header-attrs.js"></script>
+    <link href="R_topic_3_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="R_topic_3_files/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+    <script src="R_topic_3_files/fabric-4.3.1/fabric.min.js"></script>
+    <link href="R_topic_3_files/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
+    <script src="R_topic_3_files/xaringanExtra-scribble-0.0.1/scribble.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#FF0000"],"pen_size":3,"eraser_size":30,"palette":[]}) })</script>
+    <script src="R_topic_3_files/kePrint-0.0.1/kePrint.js"></script>
+    <link href="R_topic_3_files/lightable-0.0.1/lightable.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Data Manipulation and Summarization
+]
+.author[
+### Dr. Lendie Follett
+]
+.date[
+### Fall 2022
+]
+
+---
+
+
+
+
+
+
+
+## Where we've been
+
+* Basic calculations
+* Function use on vectors, scalars
+* Introductory data visualizations
+
+--
+
+## Where we're going
+
+* Logical subsetting rows of data
+* Subsetting columns of data
+* Creating new columns
+* Ordering data
+* Summarizing data
+---
+
+## Packages we'll use
+
+```r
+#Install packages
+#Recall, you only have to do this once (so I'm omitting ggplot2)
+install.packages("dplyr")
+```
+
+
+```r
+#Load packages
+library(ggplot2)#data visualization
+library(dplyr) #data manipulation
+```
+
+---
+## The dplyr framework
+This is a rich package used extensively in industry for data cleaning and manipulation (With the end goal of turning that data into knowledge!!!). If you google `dplyr`, you will find the following:
+
+"dplyr is a grammar of data manipulation, providing a consistent set of verbs that help you solve the most common data manipulation challenges:
+
+* `mutate()` adds new variables that are functions of existing variables
+* `select()` picks variables based on their names.
+* `filter()` picks cases based on their values.
+* `summarise()` reduces multiple values down to a single summary.
+* `arrange()` changes the ordering of the rows."
+
+We'll also be using `group_by()`, which is a power-house for data summarizing!
+
+--
+
+We will learn how to use each of these functions to accomplish common goals. 
+
+---
+## Creating new columns in your data
+
+There are two ways to do this. One old school (but perfectly acceptable) and one using `dplyr`. Best to learn with an example. 
+--
+
+#### Old school
+* Use `$` syntax to specify ownership of new variable
+* Use `&lt;-` or `=` syntax to signify assignment of variable
+
+```r
+# Calculate cost value per carat
+diamonds$cost_per_carat &lt;- diamonds$price/diamonds$carat
+```
+
+???
+Recall the diamonds data. In this data set we have the cost of the diamond, but note that these diamonds are all of varying sizes. What if we're actually more interested in a standardized-cost? Such as cost per carat? In that case, we'll have to create a new variable/column in our dataset that has the information we'll need. There are two ways to do this. 
+
+
+--
+#### mutate() from dplyr
+* Use `&lt;-` or `=` syntax to signify assignment: this time, though, we're over-writing the entire diamonds with a new version of diamonds that has a new variable `cost_per_carat`.
+* Do **not** use `$` within `mutate()`. Just don't do it...
+
+```r
+# Calculate cost value per carat
+diamonds &lt;- mutate(diamonds, 
+                   cost_per_carat = price/carat)
+```
+
+
+
+---
+## So what method should we use?
+
+* I don't really care. 
+
+--
+
+* However, `mutate()` is considered more "modern" and may help simplify more complicated coding scripts. 
+
+--
+
+
+* This is largely because 
+1. You don't use the `data_name$` notation every time you call a variable and
+2. You can create multiple variables within the same `mutate()` function. 
+
+---
+## So what method should we use? Example:
+
+
+```r
+# Calculate cost value per carat AND carat rounded to the nearest lower integer
+diamonds &lt;- mutate(diamonds, 
+                   cost_per_carat = price/carat`,`
+                   nearest_carat = floor(carat))
+#note: you separate the different tasks with a comma
+```
+
+vs
+
+
+```r
+diamonds$cost_per_carat = diamonds$price/diamonds$carat
+diamonds$nearest_carat = floor(diamonds$carat)
+#note: no comma, but you have to be specific about ownership (via "diamonds$")
+```
+
+--
+Either way, you'll get the same thing (below), but there is something to be said about code readability and efficient programming.
+
+&lt;table class=" lightable-paper" style='font-family: "Arial Narrow", arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; carat &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; cut &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; color &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; clarity &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; depth &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; table &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; price &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; x &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; y &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; z &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; cost_per_carat &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; nearest_carat &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0.23 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Ideal &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; E &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; SI2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 61.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 55 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 326 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.95 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.98 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.43 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: yellow !important;"&gt; 1417.391 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: yellow !important;"&gt; 0 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0.21 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Premium &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; E &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; SI1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 59.8 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 61 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 326 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.89 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.84 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.31 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: yellow !important;"&gt; 1552.381 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: yellow !important;"&gt; 0 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0.23 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Good &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; E &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; VS1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 56.9 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 65 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 327 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.05 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.07 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.31 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: yellow !important;"&gt; 1421.739 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: yellow !important;"&gt; 0 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0.29 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Premium &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; I &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; VS2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 62.4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 58 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 334 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.20 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.23 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.63 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: yellow !important;"&gt; 1151.724 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: yellow !important;"&gt; 0 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+
+## Selecting/subsetting columns from your data
+
+* Recall in SAS we used the `keep`/`drop` statements to create a new data set with/without a specified selection of variables. 
+* In R, there are again a few ways to do this. We'll focus on the `select()` function. 
+
+
+```r
+#create new data frame called diamonds_sub
+#only contains carat, cut, and price
+diamonds_sub &lt;- select(diamonds, carat, cut, price)
+#note: the first argument is the data frame. All the rest are the VERBATIM names of columns you want. 
+head(diamonds_sub, 3)
+```
+
+```
+## # A tibble: 3 × 3
+##   carat cut     price
+##   &lt;dbl&gt; &lt;ord&gt;   &lt;int&gt;
+## 1  0.23 Ideal     326
+## 2  0.21 Premium   326
+## 3  0.23 Good      327
+```
+
+
+???
+It’s not uncommon to get datasets with hundreds or even thousands of variables - most of them irrelevant. In this case, the first challenge is often narrowing in on the variables you’re actually interested in. select() allows you to rapidly zoom in on a useful subset using operations based on the names of the variables.
+
+---
+
+
+## Selecting/subsetting columns from your data
+
+
+
+```r
+#create new data frame called diamonds_sub
+#only contains variables between carat and price, inclusive
+diamonds_sub &lt;- select(diamonds, carat:price)
+#note: this is dependent on the ordering of your variables
+head(diamonds_sub, 3)
+```
+
+```
+## # A tibble: 3 × 7
+##   carat cut     color clarity depth table price
+##   &lt;dbl&gt; &lt;ord&gt;   &lt;ord&gt; &lt;ord&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt;
+## 1  0.23 Ideal   E     SI2      61.5    55   326
+## 2  0.21 Premium E     SI1      59.8    61   326
+## 3  0.23 Good    E     VS1      56.9    65   327
+```
+---
+
+
+## Selecting/subsetting columns from your data
+
+
+```r
+#create new data frame called diamonds_sub
+#only contains variables THAT ARE NOT between carat and price, inclusive
+diamonds_sub &lt;- select(diamonds, -(carat:price))
+#note: the negative sign means we don't want those guys.
+head(diamonds_sub, 3)
+```
+
+```
+## # A tibble: 3 × 5
+##       x     y     z cost_per_carat nearest_carat
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;          &lt;dbl&gt;         &lt;dbl&gt;
+## 1  3.95  3.98  2.43          1417.             0
+## 2  3.89  3.84  2.31          1552.             0
+## 3  4.05  4.07  2.31          1422.             0
+```
+
+---
+
+## Selecting/subsetting columns from your data
+
+
+
+```r
+diamonds_sub &lt;- select(diamonds, starts_with("c", ignore.case=TRUE))
+#what does this do? What does ignore.case = TRUE do?
+head(diamonds_sub, 3)
+```
+
+```
+## # A tibble: 3 × 5
+##   carat cut     color clarity cost_per_carat
+##   &lt;dbl&gt; &lt;ord&gt;   &lt;ord&gt; &lt;ord&gt;            &lt;dbl&gt;
+## 1  0.23 Ideal   E     SI2              1417.
+## 2  0.21 Premium E     SI1              1552.
+## 3  0.23 Good    E     VS1              1422.
+```
+
+```r
+#see:
+?starts_with
+```
+
+```
+## Help on topic 'starts_with' was found in the following packages:
+## 
+##   Package               Library
+##   dplyr                 /Library/Frameworks/R.framework/Versions/4.2/Resources/library
+##   tidyselect            /Library/Frameworks/R.framework/Versions/4.2/Resources/library
+## 
+## 
+## Using the first match ...
+```
+
+---
+
+## Selecting/subsetting columns from your data
+
+* `starts_with()` provided an easy way to select all variables that start with some specified string. 
+* Also see:
+  - `ends_with()`:  Ends with a suffix.
+  - `contains()`: Contains a literal string anywhere in the name.
+  - `matches()`: Matches a regular expression. 
+  - `num_range()`: Matches a numerical range like x01, x02, x03
+
+* Use documentation (e.g., `?num_range()`) for details and examples of how to use these helper functions.
+
+---
+## Selecting/subsetting rows from your data
+* Recall in SAS we used the `where` statement to subset rows conditionally. We can do the same thing in R using `filter()`.
+* Here are some examples using logical operators. 
+* If you need a refresher, see the slide titled "Logical Operators" in R Topic 1 slides
+
+
+```r
+expensive_ones &lt;- filter(diamonds, price &gt; 10000)
+good_color &lt;- filter(diamonds, color %in% c("D", "E", "F"))
+poor_quality &lt;- filter(diamonds, color == "J" | cut == "Fair" )
+really_poor_quality &lt;- filter(diamonds, color == "J" &amp; cut == "Fair")
+over_priced &lt;- filter(diamonds, price/carat &gt; 5000 )
+#Notice how I use "|" for OR and "&amp;" for AND
+```
+
+
+---
+## Selecting/subsetting rows from your data
+* At this time it's good to note that dplyr functions never modify their input (above, diamonds). Thus, if you want to save your results, you have to use the assignment operator `&lt;-` or `=` to save a new object. 
+* For example, the following code effectively *does nothing* but prints the results to the console. 
+
+
+
+```r
+filter(diamonds, price &gt; 10000)
+```
+
+--
+
+As we've seen, you have to *assign* if you want to actually create something. e.g., 
+
+
+```r
+cant_afford_it &lt;- filter(diamonds, price &gt; 10000)
+```
+---
+
+## Summarising your data
+
+* In SAS we used `proc means` to calculate summary statistics (mean, standard deviation, min, max, etc...) from our data. 
+* Often, we did this within each unique level of one or more categorical variables. 
+* We can do similar things in R with `summarise()`
+
+--
+
+* Here's the simplest example (silly-simple, really):
+
+
+```r
+mean_prices &lt;- summarise(diamonds, mean = mean(price))
+mean_prices
+```
+
+```
+## # A tibble: 1 × 1
+##    mean
+##   &lt;dbl&gt;
+## 1 3933.
+```
+
+That's great, but is unlikely to impress anyone.
+---
+
+
+## Hold that thought! Missing value weirdness  
+
+Remember in SAS, character missing values were represented by " " while numeric missing values were represented by a period. In R, we have a more formal conceptualization of an unknown value - `NA`. You will see this in your R data frame where cells are missing.
+
+
+```r
+NA &gt; 5
+```
+
+```
+## [1] NA
+```
+
+```r
+10 == NA
+```
+
+```
+## [1] NA
+```
+
+```r
+NA + 10
+```
+
+```
+## [1] NA
+```
+
+```r
+NA / 2
+```
+
+```
+## [1] NA
+```
+
+--
+Okay, fair enough. 
+
+---
+## Missing value weirdness  
+
+```r
+NA == NA
+```
+
+```
+## [1] NA
+```
+--
+
+
+Here's an example from R4DS:
+
+```r
+# Let x be Mary's age. We don't know how old she is.
+x &lt;- NA
+
+# Let y be John's age. We don't know how old he is.
+y &lt;- NA
+
+# Are John and Mary the same age?
+x == y
+```
+
+```
+## [1] NA
+```
+
+```r
+#&gt; [1] NA
+# We don't know!
+```
+## Misssing values
+---
+If you want to determine if a value is missing, use `is.na()`:
+
+```r
+is.na(x)
+```
+
+```
+## [1] TRUE
+```
+
+```r
+x &lt;- 25 #overwrite x, say now we know Mary is 25 years old
+is.na(x)
+```
+
+```
+## [1] FALSE
+```
+
+
+---
+## Missing values 
+For some data-frame context, say we have the following data frame. 
+
+
+
+```r
+messy_data
+```
+
+```
+##    animals exist   size population
+## 1      cat  TRUE  small         40
+## 2      dog  TRUE medium         40
+## 3 hampster  TRUE   &lt;NA&gt;         12
+## 4  unicorn FALSE   huge          0
+## 5   iguana  TRUE  small         NA
+```
+
+```r
+#Note: 0 is NOT a missing value. Also: a missing value is NOT necessarily 0.
+```
+---
+## Missing value weirdness 
+Often, we'll want to subset/filter our data based on missing values. We might use `filter()` to do this:
+
+
+
+```r
+has_size_missings &lt;- filter(messy_data, is.na(size))
+has_any_missing &lt;- filter(messy_data ,is.na(size) | is.na(population))
+```
+
+
+Additionally, note that `summary()` gives you descriptive stats about missingness:
+
+```r
+summary(messy_data)
+```
+
+```
+##      animals    exist             size     population
+##  cat     :1   Mode :logical   huge  :1   Min.   : 0  
+##  dog     :1   FALSE:1         medium:1   1st Qu.: 9  
+##  hampster:1   TRUE :4         small :2   Median :26  
+##  iguana  :1                   NA's  :1   Mean   :23  
+##  unicorn :1                              3rd Qu.:40  
+##                                          Max.   :40  
+##                                          NA's   :1
+```
+
+Finally, see the function `complete.cases()`. Though, I warn against using this function too liberally. 
+---
+## Back to it: Summarising your data
+
+Question: what if we try to summarise a numeric column that has missing values in it? We will get NA if we perform any mathematical summary on a vector containing a NA. 
+
+
+```r
+x &lt;- c(2.5, 6.7, NA, 9.0, 2.1)
+mean(x)
+```
+
+```
+## [1] NA
+```
+
+```r
+mean(x, na.rm=TRUE)
+```
+
+```
+## [1] 5.075
+```
+
+We can add `na.rm=TRUE` to tell R to fully ignore any NA values before starting the calculation! This is an argument in most numeric summary functions. 
+---
+## Summarising your data
+
+As I said before, `mean_prices &lt;- summarise(diamonds, mean = mean(price))`, is a perfectly correct piece of code. But it's not that practical. In real life, we'll likely want to group data up and *then* perform summaries, to see how traits vary across the groups. For example, suppose our goal is to see how diamond price is associated with cut, on average.
+
+
+```r
+#Step one: group your data
+cut_grouped &lt;- `group_by`(diamonds, cut)
+
+#Step two: summarise the grouped *diamonds* data
+cut_price_means &lt;- summarise(cut_grouped, mean_price = mean(price, na.rm=TRUE))
+cut_price_means
+```
+
+```
+## # A tibble: 5 × 2
+##   cut       mean_price
+##   &lt;ord&gt;          &lt;dbl&gt;
+## 1 Fair           4359.
+## 2 Good           3929.
+## 3 Very Good      3982.
+## 4 Premium        4584.
+## 5 Ideal          3458.
+```
+---
+## Summarising your data
+
+* The key to getting summaries within categories is the `group_by()` function. 
+* You can group by multiple categorical variables, too!
+* Just list those variable names (VERBATIM) after the name of your data, separated by commas
+
+
+```r
+#Step one: group your data
+grouped &lt;- group_by(diamonds, cut, color)
+
+#Step two: summarise the grouped *diamonds* data
+price_means &lt;- summarise(grouped, mean_price = mean(price, na.rm=TRUE))
+price_means
+```
+
+```
+## # A tibble: 35 × 3
+## # Groups:   cut [5]
+##    cut   color mean_price
+##    &lt;ord&gt; &lt;ord&gt;      &lt;dbl&gt;
+##  1 Fair  D          4291.
+##  2 Fair  E          3682.
+##  3 Fair  F          3827.
+##  4 Fair  G          4239.
+##  5 Fair  H          5136.
+##  6 Fair  I          4685.
+##  7 Fair  J          4976.
+##  8 Good  D          3405.
+##  9 Good  E          3424.
+## 10 Good  F          3496.
+## # … with 25 more rows
+```
+
+---
+## Summarising your data
+
+Remember, it's the *grouped* object that you feed to `summarise()`.
+
+--
+
+## `group_by()` ❤️ `summarise()`
+
+--
+
+*Related but not likely important for your future*: Want to make emojis? Install the `emo` package via `devtools::install_github("hadley/emo")`. 🐱😄
+
+
+---
+
+## Summarising your data
+### Counts
+
+* Count number of observations within groups
+
+
+```r
+#Step one: group your data
+grouped &lt;- group_by(diamonds, cut)
+
+#Step two: summarise the grouped *diamonds* data
+counts_by_cut &lt;- summarise(grouped, count = n())
+counts_by_cut
+```
+
+```
+## # A tibble: 5 × 2
+##   cut       count
+##   &lt;ord&gt;     &lt;int&gt;
+## 1 Fair       1610
+## 2 Good       4906
+## 3 Very Good 12082
+## 4 Premium   13791
+## 5 Ideal     21551
+```
+
+---
+## Summarising your data
+### Counts
+
+**Question**: How do the following compare in terms of questions they answer? Why might you want to use one over the other? What are the benefits of both methods?
+.pull-left[
+
+```r
+ggplot(data = diamonds) +
+  geom_bar(aes(x = cut)) 
+```
+
+&lt;img src="R_topic_3_files/figure-html/unnamed-chunk-27-1.png" width="60%" height="40%" /&gt;
+
+```r
+#rookie plot, i know. title? labels?
+```
+]
+.pull-right[
+
+
+```r
+counts_by_cut
+```
+
+```
+## # A tibble: 5 × 2
+##   cut       count
+##   &lt;ord&gt;     &lt;int&gt;
+## 1 Fair       1610
+## 2 Good       4906
+## 3 Very Good 12082
+## 4 Premium   13791
+## 5 Ideal     21551
+```
+]
+---
+## Summarising your data
+
+Usually it's not one calculation you'll need to do, but multiple.
+
+
+```r
+#Step one: group your data
+grouped &lt;- group_by(diamonds, cut)
+
+#Step two: summarise the grouped *diamonds* data
+summary_by_cut &lt;- summarise(grouped, 
+                            count = n(),
+                            mean_price = mean(price, na.rm=TRUE),
+                            mean_carat = mean(carat, na.rm=TRUE))
+summary_by_cut
+```
+
+```
+## # A tibble: 5 × 4
+##   cut       count mean_price mean_carat
+##   &lt;ord&gt;     &lt;int&gt;      &lt;dbl&gt;      &lt;dbl&gt;
+## 1 Fair       1610      4359.      1.05 
+## 2 Good       4906      3929.      0.849
+## 3 Very Good 12082      3982.      0.806
+## 4 Premium   13791      4584.      0.892
+## 5 Ideal     21551      3458.      0.703
+```
+Note the commas separating the *three summarizations done*. We've seen something similar when we created multiple variables simultaneously in `mutate()`.
+
+---
+## Summarising your data
+
+If visualizations are your thing (and I can't imagine why they wouldn't be) you can take those summarized objects and plot them!
+.pull-left[
+
+```r
+ggplot(data = summary_by_cut) +
+  geom_col(aes(x = cut, y = mean_price, fill = cut)) + #geom_col?
+  scale_fill_viridis_d("Cut")+ #what does this do?
+  theme_bw()+ #what does this do? +
+  labs(x = "Cut Category", y = "Average Price (US Dollar $)")
+```
+]
+.pull-right[
+
+&lt;img src="R_topic_3_files/figure-html/unnamed-chunk-31-1.png" width="50%" height="50%" /&gt;
+
+]
+
+I used three potentially new functions here. What do they do? Find out!
+
+```r
+?geom_col #how is it different from geom_bar?
+?scale_fill_viridis_d #what does this have to do with inclusivity?
+?theme_bw #i just like this :)
+```
+
+---
+
+class: show-only-last-code-result
+
+## Sorting data
+
+Change the ordering of rows in your data. Suppose I want to investigate a few of the most expensive diamonds. An easy way to do that would be to order `diamonds` by price. 
+
+
+```r
+diamonds_ordered &lt;- `arrange`(diamonds, price)
+head(diamonds_ordered)
+```
+
+```
+## # A tibble: 6 × 12
+##   carat cut     color clarity depth table price     x     y     z cost_per_carat
+##   &lt;dbl&gt; &lt;ord&gt;   &lt;ord&gt; &lt;ord&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;          &lt;dbl&gt;
+## 1  0.23 Ideal   E     SI2      61.5    55   326  3.95  3.98  2.43          1417.
+## 2  0.21 Premium E     SI1      59.8    61   326  3.89  3.84  2.31          1552.
+## 3  0.23 Good    E     VS1      56.9    65   327  4.05  4.07  2.31          1422.
+## 4  0.29 Premium I     VS2      62.4    58   334  4.2   4.23  2.63          1152.
+## 5  0.31 Good    J     SI2      63.3    58   335  4.34  4.35  2.75          1081.
+## 6  0.24 Very G… J     VVS2     62.8    57   336  3.94  3.96  2.48          1400 
+## # … with 1 more variable: nearest_carat &lt;dbl&gt;
+```
+
+```r
+#hmmmm, these appear to be the least expensive
+#Use the desc() function to order by *descending* price
+```
+---
+## Sorting data
+
+Change the ordering of rows in your data. Suppose I want to investigate a few of the most expensive diamonds. An easy way to do that would be to order `diamonds` by price. 
+
+
+```r
+diamonds_ordered &lt;- arrange(diamonds, `desc`(price))
+head(diamonds_ordered, 10)
+```
+
+```
+## # A tibble: 10 × 12
+##    carat cut    color clarity depth table price     x     y     z cost_per_carat
+##    &lt;dbl&gt; &lt;ord&gt;  &lt;ord&gt; &lt;ord&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;          &lt;dbl&gt;
+##  1  2.29 Premi… I     VS2      60.8    60 18823  8.5   8.47  5.16          8220.
+##  2  2    Very … G     SI1      63.5    56 18818  7.9   7.97  5.04          9409 
+##  3  1.51 Ideal  G     IF       61.7    55 18806  7.37  7.41  4.56         12454.
+##  4  2.07 Ideal  G     SI2      62.5    55 18804  8.2   8.13  5.11          9084.
+##  5  2    Very … H     SI1      62.8    57 18803  7.95  8     5.01          9402.
+##  6  2.29 Premi… I     SI1      61.8    59 18797  8.52  8.45  5.24          8208.
+##  7  2.04 Premi… H     SI1      58.1    60 18795  8.37  8.28  4.84          9213.
+##  8  2    Premi… I     VS1      60.8    59 18795  8.13  8.02  4.91          9398.
+##  9  1.71 Premi… F     VS2      62.3    59 18791  7.57  7.53  4.7          10989.
+## 10  2.15 Ideal  G     SI2      62.6    54 18791  8.29  8.35  5.21          8740 
+## # … with 1 more variable: nearest_carat &lt;dbl&gt;
+```
+
+--
+
+The 10 most expensive tend to be large in size (2 carats or more, usually!), with good color and moderately-good clarity.
+
+---
+## What have we done?!
+
+Phew, that was a lot. Here's what we have covered:
+
+* Logical subsetting rows of data (`filter`)
+* Subsetting columns of data (`select`)
+* Creating new columns (`mutate`)
+* Ordering data (`arrange`)
+* Summarizing data (`group_by` and `summarise`)
+* A bit more data visualization (ggplot2)
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"highlightSpans": true,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+<style>
+.logo {
+  background-image: url(Rlogo.png);
+  background-size: contain;
+  background-repeat: no-repeat;
+  position: absolute;
+  top: 1em;
+  right: 1em;
+  width: 110px;
+  height: 128px;
+  z-index: 0;
+}
+</style>
+
+<script>
+document
+  .querySelectorAll(
+    '.remark-slide-content' +
+    ':not(.title-slide)' +
+    // add additional classes to exclude here, e.g.
+    // ':not(.inverse)' +
+    ':not(.hide-logo)'
+  )
+  .forEach(el => {
+    el.innerHTML += '<div class="logo"></div>';
+  });
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

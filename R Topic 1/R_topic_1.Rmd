@@ -1,0 +1,260 @@
+
+---
+title: "Introduction to R (Part 1) - The Basics"
+author: "Dr. Lendie Follett"
+date: "6/22/2021"
+output:
+  xaringan::moon_reader:
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+    includes:
+        after_body: insert-logo.html
+---
+
+# Why R?
+
+* R and Python are the most common languages used in data science
+
+--
+* R is open source - this means:
+  1. It is free, which is cool.
+  2. You have access to the code behind the functions you are using on your data
+
+--
+* The entire data science / statistics / computer science community contributes to R's development through *packages*
+
+--
+* R is very flexible and, thus, powerful. If you can program it, you can do it.
+
+---
+
+
+# Getting Started
+```{r, echo=FALSE,out.width="70%",out.height="50%",fig.cap="RStudio interface",fig.show='hold',fig.align='center'}
+knitr::include_graphics(c("Images/R_t1_rstudio.png"))
+
+y <- c(6.2, 4.9, 1.1)
+x <- 40
+``` 
+???
+
+Have the students open Rstudio
+
+---
+## R is a calculator
+Here's a list of a few mathematical tasks and code translations:
+.pull-left[
+#####  $x = 40$ (assigning $x$ the value of 40)
+#####  $y = \begin{bmatrix} 6.2 & 4.9 & 1.1 \end{bmatrix}$ (create vector y)
+#####  $2x$ (x times 2)
+#####  $\sum^3_{i = 1} y_i = 6.2 + 4.9 + 1.1$ (sum up the matrix)
+##### $x^2$ (take x to $2^{nd}$ power)
+##### $y_2$ (taking $2^{nd}$ element of y)
+]
+
+.pull-right[
+#####  `x <- 40`
+#####  `y <- c(6.2, 4.9, 1.1)`
+#####  `2*x`
+#####  `sum(y)`
+##### `x^2`
+##### `y[2]`
+]
+
+???
+
+Tip: be very explicit/clear with your mathematical operators. e.g., 2*x instead of 2x. 
+
+---
+
+## Functions
+
+* R has many ready-to-use functions
+* Usually, the name of the function is self explanatory
+* Functions require *arguments* inside the parentheses
+
+```{r,eval=FALSE}
+
+function_name(argument1, argument2)
+
+```
+
+
+
+---
+## Functions
+
+* R has many ready-to-use functions
+* Usually, the name of the function is self explanatory
+* Functions require *arguments* inside the parentheses
+```{r,eval=FALSE}
+
+function_name(argument1, argument2)
+
+```
+
+* You supply the argument(s) - for example,
+
+```{r fun, echo=TRUE}
+#square root of any real number
+sqrt(9)
+#what happens if we supply a vector as the argument?
+sqrt(y)
+
+```
+
+
+---
+## Functions
+
+* R has many ready-to-use functions
+* Usually, the name of the function is self explanatory
+* Functions require *arguments* inside the parentheses
+```{r,eval=FALSE}
+
+function_name(argument1, argument2)
+
+```
+
+
+* Some arithmetic functions: `sqrt(), sin(), cos(), exp(), log()`. These will apply themselves to each element of the vector.
+
+* Some summary functions: `mean(), sum(), var(), min(), max(), length()`. These will reduce a vector to a single summary statistic (to a vector of length 1).
+```{r}
+mean(y)
+sum(y)
+```
+
+---
+
+## Functions
+
+* If you're unsure about what a function does, ask R. 
+* For example, create a vector consisting of a regular sequence of numbers using the `seq()` function
+
+```{r}
+#simply type a "?" before the function name
+?seq
+#SURPRISE ATTACK YOUR TURN:
+#how would I generate a vector containing a sequence
+#of 10 evenly spaced numbers ranging from 1 to 200?
+```
+
+
+*There are MANY functions in R. We won't even scratch the surface in classtime. *
+
+---
+
+# Getting Started
+
+Open a *script* - typing in the console is fine to start with but we will put code we want to save into a script.
+```{r, echo=FALSE,out.width="70%",out.height="50%",fig.cap="RStudio Interface",fig.show='hold',fig.align='center'}
+knitr::include_graphics(c("Images/R_t1_rstudio3.png"))
+
+
+``` 
+???
+
+Have the students open Rstudio. 
+
+Re-do some of the calculations under the comment 'R is a calculator'
+
+Save the script together as in_class_intro.R
+---
+background-color: #6495ED
+
+## Your Turn
+
+For this Your Turn, keep working within `in_class_intro.R`. 
+
+In machine learning, we often have to calculate the *mean squared difference between two vectors*. Say we have these two vectors:
+
+* $a = \begin{bmatrix} 2 & 4 & 6 &5\end{bmatrix}$ and $b = \begin{bmatrix} 2.2 & 4.5 & 7.2& 4.9 \end{bmatrix}$
+
+Calculate $\frac{1}{4}\sum_{i=1}^4(a_i - b_i)^2$. 
+
+(You may recognize this as being closely related to the Euclidean distance. )
+
+---
+## Logical Operators
+* We can use R to make comparisons using *logical operators*
+* A statement using *logical operators* will return a *logical value*: `TRUE` or `FALSE`
+* Logical operators:
+
+##### `==` equal
+##### `!=` not equal
+##### `<, >` less than, greater than
+##### `<=, >=` less than or equal to, greater than or equal to
+##### `%in%` appears in the following 
+
+*Note we need a double equal sign to assess whether two things are equal!*
+
+---
+## Case Study
+
+In the last your turn you created two objects `a` and `b` - you should see them in your Environment in the top right hand the RStudio window. 
+
+1. Calculate the mean of `a` and save it as `mean_a`
+2. Calculate the mean of `b` and save it as `mean_b`
+3. Create a new variable `is_a_bigger` which is TRUE if `a` is bigger than `b`, on average, and FALSE otherwise
+4. Create a new vector, the same length as `a` and `b`, for which the $i^{th}$ element is TRUE if $a_i > b_i$, and FALSE otherwise. 
+
+???
+Activity in R_t1_code.R
+
+---
+## Naming things
+
+* We've already named a few objects. (`a, b, x, y, is_a_bigger`, ...)
+* Recall, we name an object whenever we use the *assignment operator* (`<-` or `=`).
+```{r,eval=FALSE}
+object_name <- object_value
+```
+* Generally, it is good practice to come up with MEANINGFUL and DISTINCT names
+* One important thing to remember (especially if you're getting errors): R is case sensitive! e.g., (`a` and `A` are considered distinct objects.
+
+* R has some naming conventions:
+
+  * The first character of the name must be an UPPER or lower case letter (A-Z, a-z). After that, characters can be:
+
+    * UPPER/lower case letters 
+    
+    *  underscore (\_) and digits 0-9
+   
+    * period (.), unlike in SAS
+
+* So, for example, `1x` is not a valid name, but `x1` would be
+
+
+---
+## Commenting your code
+
+* As always, it's good practice to comment code
+* You can comment *one line at a time* by starting the line with a "\#". 
+* (As oppose to block commenting in SAS with /**/, which can perform multi-line comments)
+
+```{r boring-comment}
+
+#I like to comment as I code
+#it helps future-me remember what
+#I was thinking
+
+#assign x the value pi (approx. 3.14)
+#x <- pi 
+
+#nevermind, assign x the logical value of (pi > 3)
+x <- pi>3
+
+```
+
+???
+go back and comment the your turn code together
+
+---
+## Print this
+
+http://cran.r-project.org/doc/contrib/Short-refcard.pdf
+

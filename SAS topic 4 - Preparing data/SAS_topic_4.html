@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Preparing Data</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr. Lendie Follett" />
+    <script src="SAS_topic_4_files/header-attrs-2.14/header-attrs.js"></script>
+    <link href="SAS_topic_4_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="SAS_topic_4_files/remark-css-0.0.1/hygge-duke.css" rel="stylesheet" />
+    <link href="SAS_topic_4_files/remark-css-0.0.1/tamu-fonts.css" rel="stylesheet" />
+    <script src="SAS_topic_4_files/fabric-4.3.1/fabric.min.js"></script>
+    <link href="SAS_topic_4_files/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
+    <script src="SAS_topic_4_files/xaringanExtra-scribble-0.0.1/scribble.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#FF0000"],"pen_size":3,"eraser_size":30,"palette":[]}) })</script>
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Preparing Data
+]
+.author[
+### Dr. Lendie Follett
+]
+.date[
+### Fall 2022
+]
+
+---
+
+
+class: center, middle
+&lt;style type="text/css"&gt;
+  .reveal p {
+    text-align: left;
+  }
+  .reveal ul {
+    display: block;
+  }
+  .reveal ol {
+    display: block;
+  }  
+&lt;/style&gt;
+
+&lt;!-- Note: For presenter mode, first copy the html presentation with keyboard shortcut "c". Make sure mirroring is off. Have the copy on the big screen and go full screen mode "f" with the one on the laptop.
+"p" for presenter mode
+https://bookdown.org/yihui/rmarkdown/xaringan-key.html --&gt;
+
+&lt;!-- see LWPG1V2_001 Lesson 4 powerpoint--&gt;
+  
+
+
+## Reading and Filtering Data
+
+---
+## Data Step
+
+* We've used data steps before. 
+* If you recall, the goal of data step is to read, process, or create data.
+* Specifically, we'll learn how to use the data step to 
+  - subset/filter rows
+  - subset/filter columns
+  - compute new columns
+  - perform conditional processing
+  - more, later!
+  
+--
+
+* The simplest syntax for a data step is: 
+```r
+data output-table; 
+    set input-table;
+run;
+```
+
+* Replace `output-table` with the name of the new table you're creating.
+* Replace `input-table` with the name of the table you're reading. 
+
+
+???
+
+The DATA step is a powerful tool within the SAS programming language that you can use to manipulate data. It's rare that a data source that you start with is perfect as is and needs no preparation. Most analysts agree that manipulating and validating data takes much more time than reporting or analysis. For this reason, you'll appreciate that the DATA step is a robust yet simple programming tool that can do everything from simple querying to providing structure to messy web logs.
+
+
+When you work with data, you want to preserve your existing data and create a copy you can work on, so let’s start with a simple DATA step that does just that. The DATA statement names the table you want to create, or the output table. This can be a temporary table if you use the Work library or a permanent table if you use any other library. Please be aware that if the table you list in the DATA statement exists and you have Write access to it, the DATA step overwrites that table. And and there is no undo! The SET statement names the existing table you are reading from, or the input table. When I reference a data source as libref.table, then based on a previous LIBNAME statement, SAS knows where to find the data source and how to read it. And of course the DATA step ends with a RUN statement. 
+
+---
+## Data step
+
+We've seen the data step used, for example, with the storm summary data:
+```r
+data ss;
+set s40dat.storm_summary;
+run;
+```
+* In this example we created the table `ss`, which lives in the work library, from the existing sas data set `storm_summary`, which lives in the sashelp library. 
+* `work.ss` is an exact copy of `sashelp.storm_summary`
+
+
+---
+## Filtering Rows in the data step
+
+* We've filtered rows before using the `where` statement in proc steps.
+* Importantly, the `where` statement syntax works within a data step!
+
+```r
+data output-table; 
+    set input-table;
+    where expression;
+run;
+```
+* As before, replace `expression` with a logical expression like those practiced in SAS Topic 3. 
+* As a result, `output-table` will be an exact copy of *only the rows of* `input table` *for which *`expression`* holds true*.
+
+???
+
+We've practiced this syntax before in proc statmeents - we'll get a chance to practice coding it with data steps in the next case study. 
+
+---
+## Subsetting Columns
+* So, we can use a `where` statement to remove unwanted rows. 
+* What if we want to keep a subset of columns? 
+
+--
+
+* Choose between the `drop` statement or the `keep` statement:
+
+.pull-left[
+```r
+data output-data;
+  set input-table;
+  drop drop-col-name-list;
+run;
+```
+* Replace `drop-col-name-list` with the name(s) of columns you want *dropped* in `output-data`. (All others will be kept.)
+]
+
+.pull-right[
+```r
+data output-data;
+  set input-table;
+  keep keep-col-name-list;
+run;
+```
+* Replace `keep-col-name-list` with the name(s) of columns you want *kept* in `output-data`. (All others will be dropped.)
+]
+
+--
+* Whether you use `keep` or `drop` is a matter of convenience; which is easier? 
+
+
+---
+## Formatting Columns in the data step
+* Recall how we used the `format` statement within proc steps to change how data values displayed. 
+* The same syntax works 
+
+```r
+data output-table;
+    set input-table;
+    format col-name1 format1 &lt;col-name2 format2&gt; ...;
+run;
+
+```
+* Visually, the format statement in a data step does the same thing that it did within a proc step.
+* However, a format statement in a data step **permanently** assigns a format to a column. 
+
+--
+
+* For example, 
+
+```r
+data out.storm_cat5;
+    set s40dat.storm_summary;
+    where StartDate&gt;="01jan2000"d and MaxWindMPH&gt;=156;
+    keep StartDate EndDate Season Basin Name Type MaxWindMPH;
+    format StartDate mmddyy10.;
+run;
+
+```
+would permanently represent StartDate values (within out.storm_cat5) as MM/DD/YYYY. 
+
+---
+
+class: center, middle
+
+## Creating New Columns 
+
+
+---
+
+## Creating new columns
+
+* Rarely will a given data set come with all the columns you need
+* It's easy to create new columns using a data step
+
+```r
+data output-table;
+  set input-table;
+  new-column = expression;
+run;
+```
+* Replace `new-column` with the name of the new column you want to create. 
+* After the `=`, provide some sort of expression (mathematical, function evaluation, etc...)
+
+---
+
+## Creating new columns
+Say we wanted to look at the profit a dealership would make if they sold foreign (non-USA) vehicles at MSRP. 
+
+```r
+data cars_new; 
+    set sashelp.cars;
+    where Origin ne "USA"; 
+*    Profit = MSRP-Invoice;
+*    Source = "Non-US Cars";
+    format Profit dollar10.;
+    keep Make Model MSRP Invoice Profit Source;
+run;
+
+```
+* We created a new (temporary, since it's in the work library...) data set called cars\_new from the existing sashelp.cars.
+* `Profit = MSRP-Invoice;` creates a new column called Profit (depends on values of MSRP, Invoice). 
+* `Source = "Non-US Cars"` creates a new column called Source (a constant character value). 
+* `where Origin ne "USA";` subsets the rows in cars\_new to foreign vehicles only. 
+* `format Profit dollar10.;` puts a more meaningful format on the newly created column Profit. 
+* `keep Make Model MSRP Invoice Profit Source;` deletes all variables not listed from cars\_new.
+
+
+---
+
+## Creating new columns
+Say we wanted to look at the profit a dealership would make if they sold foreign (non-USA) vehicles at MSRP. 
+
+```r
+data cars_new; 
+    set sashelp.cars;
+    where Origin ne "USA"; 
+*    Profit = MSRP-Invoice;
+*    Source = "Non-US Cars";
+    format Profit dollar10.;
+    keep Make Model MSRP Invoice Profit Source;
+run;
+
+```
+
+&lt;img src="Images/sas_t4_newcol.png" width="75%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+## Creating columns with functions
+* Creating new columns using arithmetic operators (`+ - * /` etc...) is fairly straightforward. However, often you'll need more powerful and flexible tools. 
+* SAS has hundreds of *functions* that can be used to manipulate both numeric (including date) and character values. 
+* We'll get into a few functions in Stat 40, but for a comprehensive list:
+
+1. Go to support.sas.com/documentation. Click Programming: SAS 9.4 and Viya.
+2. In the Syntax - Quick Links section, under Language Elements, select Functions
+3. Alphabetical Listing might be useful. 
+
+---
+
+## Creating columns with functions
+
+* A *function* takes in inputs - called arguments - and outputs a value into your new column. 
+
+```r
+
+data output-table;
+  set input-table;
+  new-column=function-name(argument1 &lt;, argument2, argument3,....&gt;); 
+run;
+
+```
+
+* Replace `function-name` with the name of the function
+* Replace argument1 with the first argument the function takes in, argument 2 (optional) with the second, etc...
+
+---
+## Creating columns with functions
+
+For example, suppose we wanted to calculate the mean MPG of vehicles; the average of the city and highway MPG. 
+
+```r
+data cars_new; 
+     set sashelp.cars;
+*    MPG_Mean=mean(MPG_City, MPG_Highway);
+     format MPG_Mean 4.1;
+     keep Make Model MPG_City MPG_Highway MPG_Mean;
+run;
+
+```
+
+&lt;img src="Images/sas_t4_functionscar.png" width="75%" style="display: block; margin: auto;" /&gt;
+
+* Note: Numeric functions (like the ones listed below) *ignore missing data*! That is, the outputted values are based only on the known values. 
+
+`sum, mean, median, range, min, max, n, nmiss, .....`
+
+
+
+---
+## Creating new columns with functions 
+
+* We just saw an example of a function (`substr()`) being used on categorical variables. 
+* Here's a brief list of other functions that are useful when manipulating categorical variables:
+  - `upcase(char)`, `lowcase(char)`: changes letters in a character string to uppercase or lowercase
+  - `propcase(char, &lt;delimiters&gt;)`: Changes the first letter of each word to uppercase and other letters to lowercase
+  - `cats(char1, char2, ...)`: Concatenates character strings and removes leading and trailing blanks from each argument
+  - `substr(char, position, &lt;length&gt;)`: Returns a substring from a character string.
+  - `compress(char, 'string');`: Removes particular characters (`string`) from a character vector
+
+---
+## Creating new columns with functions 
+
+* Often, you'll want to use special functions to manipulate dates
+* Here's a brief list of functions you may find useful
+  - `MONTH(SAS-date)`: Returns a number from 1 through 12 that represents the month
+  - `YEAR(SAS-date)`: Returns the four-digit year
+  - `DAY(SAS-date)`: Returns a number from 1 through 31 that represents the day of the month
+  - `WEEKDAY(SAS-date)`: Returns a number from 1 through 7 that represents the day of the week (Sunday=1)
+  - `QTR(SAS-date)`: Returns a number from 1 through 4 that represents the quarter
+  - `YRDIF(startdate, enddate, 'AGE')`: Calculates a precise difference in years between two dates
+  - `TODAY()`: Returns the current date as a numeric SAS date value (no arguments needed)
+
+---
+class: center, middle
+## Conditional Processing
+
+---
+## Conditional Processing
+* Often in the DATA step, we need to process data conditionally. 
+* In other words, if some condition is met, then execute one statement. If a different condition is met, then execute another statement. 
+* We can accomplish this using IF-THEN logic. 
+
+
+```r
+IF expression THEN statement;
+```
+
+* For each observation, SAS evaluates `expression`. If it is true, it completes the corresponding `statement`.
+* Then it moves on to the next observation.
+* When you have multiple IF-THEN statements, SAS tests all conditions in sequence for every row of the data
+
+---
+## Conditional Processing
+* Sometimes hierarchically processing things is desirable. 
+* In that case, an `else` statement is needed!
+
+```r
+IF expression THEN statement;
+&lt;ELSE IF expression THEN statement;&gt;
+&lt;ELSE IF expression THEN statement;&gt;
+&lt;ELSE statement;&gt;
+
+```
+
+* For each observation, SAS evaluates `expression`s top down .red[until it reaches a TRUE evaluation]. 
+* Then it completes the corresponding `statement`.
+* The subsequent else statements are not processed. 
+* Then it moves on to the next observation.
+
+
+---
+background-color: #6495ED
+
+## Your Turn
+Let's group the vehicles in the cars data into 4 groups based on price (MSRP).
+
+.pull-left[
+```r
+data cars1;
+set sashelp.cars;
+if MSRP&lt;20000 then Cost_Group=1;
+else if MSRP&lt;40000 then Cost_Group=2;
+else if MSRP&lt;60000 then Cost_Group=3;
+else Cost_Group=4;
+keep Make Model Type MSRP Cost_Group;
+run;
+
+
+```
+]
+
+.pull-right[
+```r
+data cars2;
+set sashelp.cars;
+if MSRP&lt;20000 then Cost_Group=1;
+if 20000&lt;=MSRP&lt;40000 then Cost_Group=2;
+if 40000&lt;=MSRP&lt;60000 then Cost_Group=3;
+if MSRP &gt;=60000 then Cost_Group=4;
+keep Make Model Type MSRP Cost_Group;
+run;
+```
+]
+
+1. Do these two data steps evaluate identically? (i.e., cars1 = cars2?)
+2. Imagine this data set was very large. Which data step would be more computationally efficient (faster)? 
+
+???
+do an example with MSRP = 35000, 75000. what happens line by line in first and second data steps. 
+
+---
+### Creating character variables (conditionally)
+We have to be a little more careful when conditionally creating character variables. 
+
+```r
+data cars2;
+    set sashelp.cars;
+    if MSRP&lt;60000 then CarType="Basic";
+    else CarType="Luxury";
+    keep Make Model MSRP CarType;
+run;
+
+
+proc print data = cars2;
+run;
+```
+
+&lt;img src="Images/sas_t4_charconditional.png" width="50%" style="display: block; margin: auto;" /&gt;
+
+---
+### Creating character variables (conditionally)
+
+* The first occurrence of a column in the DATA step defines the name, type, and length of the column. 
+* The first occurrence of the newly created CarType variable was "Basic"; thus, the length was determined to be 5. 
+* As a result, "Luxury" is truncated to "Luxur".
+* So what can we do?
+
+---
+### Creating character variables (conditionally)
+
+* .red[Foolproof your code: start by defining your character column in the data step with a `LENGTH` statement.] 
+* The syntax for this statement is the keyword LENGTH followed by the name of the column, a dollar sign to indicate a character column, and the length you want to assign:
+
+```r
+LENGTH char-column $ length;
+```
+
+Thus, the following code would execute as expected:
+
+```r
+data cars2;
+     set sashelp.cars;
+*    length CarType $ 6;
+     if MSRP&lt;60000 then CarType="Basic";
+     else CarType="Luxury";
+     keep Make Model MSRP CarType;
+run;
+
+```
+
+---
+## Last notes on conditional processing
+
+Compound expressions? No problem? 
+
+```r
+data cars2;
+    set sashelp.cars;
+    if MPG_City&gt;26 and MPG_Highway&gt;30 then Efficiency=1;
+    else if MPG_City&gt;20 and MPG_Highway&gt;25 then Efficiency=2;
+    else Efficiency=3;
+    keep Make Model MPG_City MPG_Highway Efficiency;
+run;
+```
+
+For example, both MPG_City&gt;26 AND MPG_Highway&gt;30 need to evaluate to TRUE in order for Efficiency to be 1. 
+
+---
+## Last notes on conditional processing
+
+Compound *statement*? That's trickier...
+
+```r
+data cars2;
+    set sashelp.cars;
+    length Cost_Type $ 4;
+    if MSRP&lt;20000 then Cost_Group=1 and Cost_Type="Low";
+    else if MSRP&lt;40000 then Cost_Group=2 and Cost_Type="Mid";
+    else Cost_Group=3 and Cost_Type="High";
+run;
+
+/*The code above tries to conditionally process 
+Cost_Group and Cost_Type in the same if-else statement...
+it does not work.*/
+
+```
+---
+## Last notes on conditional processing
+* If you want to execute MULTIPLE STATEMENTS for a given condition, you need to use an `if-else do` statement. 
+
+```r
+IF expression THEN DO; 
+    &lt;executable statements&gt;
+END;
+ELSE IF expression THEN DO;
+    &lt;executable statements&gt;
+END;
+ELSE DO;
+    &lt;executable statements&gt;
+END;
+
+
+```
+If `expression` is TRUE then do all the executable statements before `END;`. 
+
+---
+## Last notes on conditional processing
+
+For example,
+```r
+data cars2;
+    set sashelp.cars;
+    keep Make Model MSRP Cost_Group;
+    if MSRP&lt;20000 then do;
+       Cost_Group=1;
+       Cost_Type="Low"
+    end;
+    else if MSRP&lt;40000 then do;
+       Cost_Group=2;
+       Cost_Type="Mid"
+    end;
+    else do;
+       Cost_Group=3;
+       Cost_Type="High";
+    end;
+run;
+
+```
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

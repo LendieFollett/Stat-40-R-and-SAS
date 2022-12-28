@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Exploring and Validating Data</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr. Lendie Follett" />
+    <meta name="date" content="2022-12-13" />
+    <script src="SAS_topic_3_files/header-attrs-2.14/header-attrs.js"></script>
+    <link href="SAS_topic_3_files/remark-css-0.0.1/hygge-duke.css" rel="stylesheet" />
+    <link href="SAS_topic_3_files/remark-css-0.0.1/tamu-fonts.css" rel="stylesheet" />
+    <link href="SAS_topic_3_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <script src="SAS_topic_3_files/kePrint-0.0.1/kePrint.js"></script>
+    <link href="SAS_topic_3_files/lightable-0.0.1/lightable.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Exploring and Validating Data
+]
+.author[
+### Dr. Lendie Follett
+]
+.date[
+### 2022-12-13
+]
+
+---
+
+
+class: center, middle
+&lt;style type="text/css"&gt;
+  .reveal p {
+    text-align: left;
+  }
+  .reveal ul {
+    display: block;
+  }
+  .reveal ol {
+    display: block;
+  }  
+&lt;/style&gt;
+
+&lt;!-- Note: For presenter mode, first copy the html presentation with keyboard shortcut "c". Make sure mirroring is off. Have the copy on the big screen and go full screen mode "f" with the one on the laptop. https://bookdown.org/yihui/rmarkdown/xaringan-key.html 
+
+NOTE: to get pull-left/right to work, you have to include defualt in the css!
+--&gt;
+
+  
+
+
+
+## Proc print
+
+* We've already used proc print to see the data portion of a SAS data set. 
+* By default, this will print each and every row and column of the requested SAS data set. 
+
+
+```r
+proc print data = input-table(obs = n);
+run;
+```
+
+--
+* Replace `input-table` with name (and library) of SAS data set. 
+* Replace `n` with the number of rows you want to print. (Helpful with large datasets.)
+
+???
+
+This is helpful with large datasets when there 
+are many rows and it would be time-consuming and space-consuming to print all of them.
+---
+background-color: #6495ED
+### Your Turn
+
+The goal of this Your Turn is to begin using SAS documentation, which will be an important part of your daily SAS use in practice.
+
+* Go to support.sas.com/documentation (*wouldn't hurt to bookmark this*). 
+* Navigate to "SAS Programming: SAS 9.4 and Viya 3.5". 
+* Under Syntax Quick Links -&gt; Quick Links for SAS Procedures, click  "SAS Procedures by Name" 
+* Find the PRINT procedure in the alphabetized list of procedures. 
+* Examine the syntax and the table of statements that can be used with proc print.
+* What is the statement that allows you to select certain variables to print? Can you choose the order they appear?
+
+???
+
+The VAR statement is used to select variables that appear in the report and determine their order.
+
+---
+### Proc print
+
+
+```r
+/*print whole SAS data set*/
+proc print data=sashelp.cars;
+run;
+
+/*print first 10 rows of these variables in specified order*/
+proc print data=sashelp.cars (obs=10);
+    var Make Model Type MSRP;
+run;
+```
+
+&lt;img src="Images/SAS_topic_3_procprint.png" width="50%" style="display: block; margin: auto;" /&gt;
+
+
+---
+### Proc means
+
+* You'll often be required to generate summary statistics of numeric columns
+
+
+```r
+proc means data()=input-table;
+         var col-name(s);
+run;
+```
+
+* The var statement isn't required; omitting it will result in all *numeric* variables being summarised. 
+* Replace `col-name(s)` with names of columns you want summary statistics for.
+
+--
+
+```r
+proc means data=sashelp.cars;
+    var EngineSize Horsepower MPG_City MPG_Highway;
+run;
+```
+
+
+&lt;img src="Images/SAS_topic_3_procmeans.png" width="75%" style="display: block; margin: auto;" /&gt;
+
+???
+The var statement is used to specify the numeric columns for which you want summary statistics. 
+If you don't include a var statement, SAS will do them all by default. 
+
+This PROC MEANS step calculates the default statistics – frequency count (N), mean, standard deviation, minimum, and maximum – for each of the columns that is listed in the VAR statement. 
+
+By examining the PROC MEANS results, you can identify average values, or values that might be outside of an expected range.
+
+
+---
+### Proc univariate
+
+* Proc univariate is like proc means
+* However, it is more detailed
+* Just as with means and print, you can use a var statement to select columns to analyze
+
+
+```r
+proc univariate data=input-table;
+         var col-name(s);
+run;
+```
+
+--
+
+For example,
+
+
+```r
+proc univariate data=sashelp.cars;
+    var MPG_Highway;
+run;
+```
+
+will give all the statistics `proc means` provides, but also things like a wide range of quantiles, range, etc...
+
+---
+### Proc freq
+* `proc means` and `proc univariate` are for analyzing distribution of numeric columns
+* `proc freq` provides a table that counts the number of rows/observations that each value of a variable appears, i.e., a frequency table.
+
+
+```r
+proc freq data=input-table;
+    tables col-name(s);
+run;
+```
+
+* The tables statement is like the var statement we saw previously; used to limit the variables/columns that sas analyzes.
+
+
+---
+### Proc freq
+
+```r
+proc freq data=sashelp.cars;
+    tables Origin Type DriveTrain;
+run;
+```
+
+* This `proc freq` step creates a separate table for Origin, Type, and DriveTrain. For example:
+
+&lt;img src="Images/SAS_topic_3_procfreq.png" width="75%" style="display: block; margin: auto;" /&gt;
+
+* `proc freq` is ESSENTIAL to cleaning data; checking for values that should/shouldn't be there!
+
+???
+
+This PROC FREQ step creates a separate table for Origin, Type, and DriveTrain. Each table includes a list of the distinct values for the column along with a frequency count, percent, and cumulative frequency and percent.
+
+
+
+For example, you might notice unexpected values or values that appear in both uppercase and lowercase. 
+
+
+---
+### Case Study
+
+Goals:
+1. Practice using libref
+2. Practice four procedures just learned in the context of how you might use them in real life. 
+
+
+```r
+/*************************************************/
+/*     Procedure syntax                          */
+/*************************************************/
+/*  Syntax                                        */
+/*                                                */
+/*    PROC PRINT DATA=input-table(OBS=n);         */
+/*        VAR col-name(s);                        */
+/*    RUN;                                        */
+/*                                                */
+/*    PROC MEANS DATA=input-table;                */
+/*        VAR col-name(s);                        */
+/*    RUN;                                        */
+/*                                                */
+/*    PROC UNIVARIATE DATA=input-table;           */
+/*        VAR col-name(s);                        */
+/*    RUN;                                        */
+/*                                                */
+/*    PROC FREQ DATA=input-table;                 */
+/*        TABLES col-name(s);                     */
+/*    RUN;                                        */
+/**************************************************/
+```
+
+???
+demos/p103d01.sas
+t3_cs_proc_intro.sas
+Let’s first try out these four procedures to learn more about the STORM_SUMMARY table. 
+
+First I want us all to create a new data set called ss (which will be a copy of the master storm_summary sas data set).
+
+libname s40dat '/home/u47369495/my_shared_file_links/u47369495/data/';
+
+/*create a copy of storm_summary in the temporary library 'work'; 
+remember, this is sometimes needed so you don't modify the master data file
+plus, now you can refer to the data as work.ss or simply ss. 
+*/
+data work.ss;
+set s40dat.storm_summary;
+run;
+
+
+Let’s first try out these four procedures to learn more about the STORM_SUMMARY table. We’ll start with the default PROC PRINT for ss. PROC PRINT creates a listing report that by default, includes all the rows and columns from the input table, plus an additional column labeled OBS. If I would like to either limit the columns printed, or change the order they appear in the listing report, I can add a VAR statement and list the columns in the order I would like them displayed. I will start with Date, Name, Basin, Status, MaxWindMPH and MinPressure. 
+Unless your table is fairly small, you usually only want to use PROC PRINT to list a subset of the rows. An easy way to limit the output to a fixed number of rows is use the OBS= data set option. Data set options are listed immediately after the table name in parentheses. So right after work.ss, I can add the OBS=10 option to just print the first 10 rows. 
+Later: filtering the rows in PROC PRINT and other procedures with a condition. 
+ 
+proc print data=work.ss(obs=10);
+	var Date Name Basin Status MaxWindMPH MinPressure Flag; 
+run;
+
+Next let’s try my favorite procedure, PROC FREQ. I’ll start with the same basic syntax we’ve seen with PROC CONTENTS and PROC PRINT. After running this basic program, notice my output is quite extensive. 
+
+proc freq data=work.ss;
+run;
+
+It includes a separate table for each column in my data. Each table lists the distinct values, and the frequency count and percentage that each value represents in the data. Some of these tables are more useful than others. If I would like to limit the tables included in the results, I can add a TABLES statement. For the STORM_SUMMARY data set, I would like to see frequency tables for basin, flag and status. These frequency tables are incredibly useful for many reasons. You can start to look at the basic distribution of your data values. You can observe problems in the data, like miscoded values or case inconsistencies. Notice Basin is mostly upper case values, but we have 2 rows where Basin is lower case al. 
+
+proc freq data=work.ss;
+	tables basin Flag Status;
+run;
+
+How about another procedure? PROC MEANS is a great way to look as basic summary statistics for our numeric columns.
+
+proc means data = work.ss;
+run;
+
+If I start with the PROC MEANS statement only, the output includes a row for each numeric column in the data, and 5 summary statistics, including N (or number of non-missing values), mean or average, standard deviation, minimum and maximum. Remember Date is numeric, so it is included in this report. If I would like to limit the variables analyzed, I can add a VAR statement and list just MaxWindMPH and MinPressure. We can see from just a quick glance at this report that we have over 500 rows with missing values for MinPressure. We can also get an idea of the ranges for these columns, and if there may be values that are invalid because they are larger or smaller than possible. 
+
+proc means data=work.ss;
+	var MaxWindMPH MinPressure;
+run;
+
+One other procedure I will mention is PROC UNIVARIATE. I will just change the word MEANS to UNIVARIATE, leave the VAR statement and run the step. This give a slightly deeper statistical look at both MaxWindMPH and MinPressure. I won’t describe all of the numbers reported, but one part of the output I would like to highlight is the Extreme Observations table. Here we see the lowest and highest 5 values.
+ 
+proc univariate data=work.ss;
+	var MaxWindMPH MinPressure;
+run;
+
+We have just scratched the surface with what these procedures can do, but you can see by simply changing the PROC name in your code, SAS quickly creates useful output that you can use to better understand your data. 
+
+
+---
+class: center, middle
+## Filtering Rows
+
+---
+## Filtering Rows
+
+* We've learned how to filter proc print output to only show the first n rows. 
+
+```r
+/*print first 10 rows*/
+proc print data = sashelp.cars(n = 10);
+run;
+```
+
+--
+
+* It's also possible to logically filter rows based on data criteria.
+* This criteria is specified in a **where statement**.
+
+--
+
+
+```r
+PROC procedure-name . . . ; /*this works for many procs*/
+        WHERE expression; /*expression is some logical expression*/
+RUN;
+```
+
+--
+* `procedure-name` can be replaced with `PRINT`, `MEANS`, `FREQ`, `UNIVARIATE`, many others!
+* replace `expression` with some logical statement defining rows to keep. 
+
+
+???
+
+If expression is TRUE, then that row is included. 
+
+proc print data = sashelp.cars;
+where type = "SUV";
+run;
+
+---
+## Filtering Rows
+
+* We've learned how to filter proc print output to only show the first n rows. 
+
+```r
+/*print first 10 rows*/
+proc print data = sashelp.cars(n = 10);
+run;
+```
+
+* It's also possible to logically filter rows based on data criteria.
+* This criteria is specified in a **where statement**.
+
+
+```r
+/*print rows from cars data where the type is*/
+proc print data = sashelp.cars;
+where type = "SUV";
+run;
+```
+
+&lt;img src="Images/sas_topic_3_cars.png" width="60%" height="30%" style="display: block; margin: auto;" /&gt;
+
+
+---
+## Filtering Rows
+### Logical Expressions
+
+Comparison operators perform a comparison, usually between a column and a constant. Expressions involving comparison operators are called **logical expressions** and evaluate to 0 (FALSE) or 1 (TRUE).
+
+
+
+
+&lt;table class=" lightable-classic" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Definition &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Symbol &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Task.Example &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Code &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; equal &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; = &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; does x equal y &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; x = y &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; less than &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &amp;lt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is x less than y &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; x &amp;lt; y &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; greater than &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &amp;gt; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is x greater than y &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; x &amp;gt; y &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; less than or equal &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; `\(\leq\)` &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is x less than or equal to y &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; x &amp;lt;= y &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; greater than or equal &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; `\(\geq\)` &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is x greater than or equal to y &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; x &amp;gt;= y &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; not equal &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; `\(\ne\)` &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; is x not equal to y &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; x ~ y OR x ^=y &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+???
+Definition            | Symbol | Task Example                    | Code |  
+----------------------|--------|---------------------------------|------|
+equal                 | =      | does x equal y                  | x = y  |
+less than             | &lt;      | is x less than y                | x &lt; y  |
+greater than          | &gt;     | is x greater than y             | x &gt; y |
+less than or equal    | `\(\\le\)`     | is x less than or equal to y    | x &lt;= y |
+greater than or equal | `\(\\ge\)`    | is x greater than or equal to y | x &gt;= y |
+not equal             | `\(\\ne\)`     | is x not equal to y             | x `\(\\sim\)`= y OR x ^= y
+---
+## Filtering Rows
+### Logical Expressions
+
+You can use logical expressions involving character and numeric columns. For example,
+
+
+```r
+where type = "SUV";
+where MPG &gt; 35;
+where MSRP &lt;= 30000;
+```
+
+* Character values are case sensitive and must be enclosed in double or single quotation marks
+* Numeric values must be standard numeric (that is, no symbols).
+
+
+
+---
+## Filtering Rows
+### Logical Expressions
+
+What about date columns? We can involve date columns in logical expressions by using **SAS date constants**.
+
+
+```r
+proc procedure-name . . .;
+where column-name comparison-operator "ddmmmyyyy"d;
+run;
+```
+
+For example, 
+
+
+```r
+where date &gt; "01JAN2015"d;
+
+/*OR*/
+
+where date &gt; "1jan15"d;
+```
+ would subset to the rows where the date occured after January 1st, 2015.
+???
+Remember that dates are stored as numeric values, so the expression is evaluated based on a numeric comparison. If you want to compare a date column to a fixed date, then you can use the SAS date constant notation. Type the date as a one- or two-digit day, a three-letter month, and two- or four-digit year, enclosed in quotation marks, followed by the letter D. SAS then turns the string date into the numeric equivalent in order to evaluate the expression. 
+
+
+---
+## Filtering Rows
+### Combining Expressions using Logical Operators
+
+
+* You can combine sub-logical expressions to create a more complicated logical expression. 
+* Combine them using "AND", "OR", or "NOT"
+
+&lt;table class=" lightable-classic" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Definition &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Code.Symbol &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Code.Mnemonic &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; and &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; &amp;amp; &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; AND &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; or &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; | &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; OR &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; not &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; ~ &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; NOT &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+
+For example, 
+
+
+```r
+proc print data=sashelp.cars;
+    var Make Model Type MSRP MPG_City MPG_Highway;
+    where Type="SUV" and MSRP &lt;= 30000; /*both need to evaluate to TRUE to print row*/
+run;
+```
+
+
+---
+## Filtering Rows
+### The in operator
+
+
+* The **in operator** can be used to check if a value (typically of a column) is contained within a specified list
+
+&lt;table class=" lightable-classic" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Example.task &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Code &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; x equals 1,2,3,4,5,6,7,8,9, or 10 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; x in (1,2,3,4,5,6,7,8,9,10) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; x equals 1,2,3,4,5,6,7,8,9, or 10 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; x in (1:10) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; x equals 1,2, 3 or 7,8,9 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; x in (1:3, 7:9) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; type equals SUV or sedan &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; type in ("SUV","Sedan") &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+* note: for character comparisons, the values in the list are enclosed in " " 
+* note: elements are enclosed in () and separated by a comma
+* The in operator can make your code simpler:
+
+
+```r
+/*these two rows of code will evaluate identically*/
+  
+where Type in ("SUV","Truck","Wagon");
+
+where Type="SUV" or Type="Truck" or Type="Wagon";
+```
+
+
+---
+## Filtering Rows
+### More on the where statement
+
+* Sometimes you want to investigate the presence of missing values
+* There is special syntax for that:
+
+
+```r
+WHERE col-name IS MISSING;
+WHERE col-name IS NOT MISSING;
+```
+
+It's good to remember that SAS treats numeric and character missing values differenty. However, the code above works for both types.  For example, 
+
+
+```r
+/*only look at rows with missing age*/
+where age is missing;
+
+/*only look at rows where the name is NOT missing*/
+where name is not missing;
+```
+
+???
+
+Let's talk about some special WHERE operators that you can use in expressions. Suppose you want to filter your data by missing values. You could write an expression where a column is equal to a period for numeric missing values or a space enclosed in quotation marks for a character missing value, but a simpler option is to use the IS MISSING or IS NOT MISSING special operator. These keywords can be used for either numeric or character missing values. 
+
+
+---
+## Filtering Rows
+### More on the where statement
+
+* The **like operator** can be useful when filtering based on text/character data. 
+
+
+```r
+where col-name like "value";
+```
+
+* This allows us to do patterm matching. Usually it is uses with "%", which is a wildcard for any number of characters. 
+
+* Note: without any wildcard symbols, `like` behaves just like `=`.
+
+---
+## Filtering Rows
+### More on the where statement
+
+&lt;table class=" lightable-classic" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; City &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Ames &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; West Des Moines &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Des Moines &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; West Des Moines &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Waukee &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Ankeny &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Urbandale &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+
+* For example, what if I wanted to apply a filter that identified cities *ending* with "Des Moines"?
+
+
+```r
+where City like "%Des Moines";
+```
+
+
+---
+## Filtering Rows
+### More on the where statement
+
+&lt;table class=" lightable-classic" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; City &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Ames &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; West Des Moines &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Des Moines &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; West Des Moines &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Waukee &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Ankeny &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Urbandale &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+
+* Or, for some reason, that identified cities *starting* with the letter "A"?
+
+```r
+where City like "A%";
+```
+
+--
+* Bonus: the underscore "_" is a wildcard for a *single* character
+
+
+---
+background-color: #6495ED
+
+## Your Turn 
+
+Continue with your script t3\_cs\_proc\_intro.sas that we started together earlier.
+
+1. Type this code into your SAS editor.
+
+
+```r
+proc print data=work.ss;
+	*where MinPressure is missing; /*same as MinPressure = .*/
+	*where Type is not missing; /*same as Type ne " "*/
+	*where MaxWindMPH between 150 and 155;
+	*where Basin like "_I";
+run;
+```
+
+2. Uncomment each WHERE statement one at a time and run the step to observe the rows that are included in the results.
+3. Comment all previous WHERE statements. Add a new WHERE statement to print storms that begin with Z. How many storms are included in the results?
+
+
+
+???
+/*FOLLOW-UP YOUR TURN ABOUT FILTERING*/
+
+proc print data=work.ss;
+   where name like "Z%";
+run;
+
+* NOTE: There were 24 observations read from the data set WORK.SS.
+       WHERE name like 'Z%';
+
+
+---
+class: center, middle
+## Efficiency in SAS
+
+---
+
+## Efficiency in SAS
+### Specifically, using Macro variables
+
+Let's say you wrote your whole program around an interest in "Wagon" type vehicles. You thought your boss was really into wagons.
+
+
+```r
+proc print data=sashelp.cars;
+    where Type="Wagon";
+    var Type Make Model MSRP;
+run;
+
+proc means data=sashelp.cars;
+    where Type="Wagon";
+    var MSRP MPG_Highway;
+run;
+
+proc freq data=sashelp.cars;
+    where Type="Wagon";
+tables Origin Make;
+run;
+```
+
+--
+
+.red["*Ope, actually I wanted "SUV" descriptions, not "Wagon" descriptions *".]
+
+--
+
+
+.......
+
+---
+
+### Macro variables
+
+There is an easy way to make your programs flexible for filtering... and beyond! The solution is to create a **macro variable**. 
+
+
+```r
+/*Define a macro variable called 'macro-variable-name' with the value 'value'*/
+%LET macro-variable-name = value;
+```
+
+* Replace `macro-variable-name` with whatever variable name you wish; make it meaningful but concise. 
+* Replace `value` with the value you want the variable to take on. 
+* Oddly enough, character variables don't get enclosed in " "
+
+Use the variable by calling
+
+```r
+&amp;macro-variable-name
+```
+
+wherever you want that value used in your code. 
+
+
+???
+macro variables let you store text and substitute it into your code when it runs. 
+This allows you to change your code in one place only! 
+Kind of like a find-and-replace. 
+
+First define the macro variable. Then, whenever you want to reference that value, use the macro variable name preceded by a "&amp;".
+
+---
+
+### Macro variables
+
+.pull-left[
+What you code:
+```r
+*%let CarType = Wagon;
+
+proc print data=sashelp.cars;
+    where Type="&amp;CarType";
+    var Type Make Model MSRP;
+run;
+
+proc means data=sashelp.cars;
+    where Type="&amp;CarType";
+    var MSRP MPG_Highway;
+run;
+
+proc freq data=sashelp.cars;
+    where Type="&amp;CarType";
+tables Origin Make;
+run;
+
+```
+]
+
+.pull-right[
+What SAS reads:
+```r
+*%let CarType = Wagon;
+
+proc print data=sashelp.cars;
+    where Type=Wagon;
+    var Type Make Model MSRP;
+run;
+
+proc means data=sashelp.cars;
+    where Type=Wagon;
+    var MSRP MPG_Highway;
+run;
+
+proc freq data=sashelp.cars;
+    where Type=Wagon;
+tables Origin Make;
+run;
+
+```
+
+]
+
+Everywhere SAS sees `&amp;CarType`, Wagon replaces it!
+
+
+---
+## Case Study 
+### Using Storm Summary Data
+Goals: 
+In each of the procs we use, let's write the code to efficiently filter, in case we change our minds about the basin we're interested in. 
+1. Obtain simple summary statistics of MaxWindMPH and MinPressure, but only for Basin "NA". 
+2. Obtain a frequency table of Type, but only for Basin "NA".
+
+.bottom[Save this script as t3\_cs\_macrovar.sas]
+
+???
+
+see t3_cs_macrovar.sas
+
+***********************************************************;
+*  Activity 3.03                                          *;
+*    1) Change the value in the %LET statement from NA to *;
+*       SP.                                               *;
+*    2) Run the program and carefully read the log.       *;
+*       Which procedure did not produce a report?         *;
+*       What is different about the WHERE statement in    *;
+*       that step?                                        *;
+***********************************************************;
+
+
+libname s40dat '/home/u47369495/my_shared_file_links/u47369495/data/';
+
+%let BasinCode=NA;
+
+proc means data=s40dat.storm_summary;
+	where Basin="&amp;BasinCode";
+	var MaxWindMPH MinPressure;
+run;
+
+/*what if we wrote our code like this?*/
+proc freq data=s40dat.storm_summary;
+	where Basin='&amp;BasinCode';
+	tables Type;
+run;
+
+Single quotation marks were used around the macro variable &amp;BasinCode rather than double quotation marks.
+
+48         proc freq data=pg1.storm_summary;
+49         	where Basin='&amp;BasinCode';
+50         	tables Type;
+51         run;
+
+NOTE: No observations were selected from data set PG1.STORM_SUMMARY.
+NOTE: There were 0 observations read from the data set PG1.STORM_SUMMARY. 
+WHERE 0 /* an obviously FALSE WHERE clause */ ;
+
+----&gt; double quotation marks must be used around macro variables!
+
+---
+class: center, middle
+## Formatting Columns
+
+---
+## Formatting Columns
+* Sometimes when you're exploring data, it can be difficult to interpret the raw values in the data. 
+* For example, SAS stores date values as the number of days after (+) or before (-) January 01, 1960.
+
+&lt;img src="Images/SAS_topic_3_noformat.png" width="25%" height="15%" /&gt;&lt;img src="Images/SAS_topic_3_formatstatement.png" width="25%" height="15%" /&gt;&lt;img src="Images/SAS_topic_3_format.png" width="25%" height="15%" /&gt;
+
+
+
+```r
+proc print data=input-table;
+   format col-name(s)  format;
+run;
+```
+
+* `format` will take on the form of `&lt;$&gt;format-name&lt;w&gt;.&lt;d&gt;`
+  - A `$` indicates this variable should have a character format
+  - `w` represents the total width of the formatted value (if applicable)
+  - All formats will include a `.`
+  - The d represents the number of decimal places (if applicable)
+  
+---
+## Examples of Numeric Column Formats
+&lt;table class=" lightable-classic" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Format Name &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Example Value &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Format Applied &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Formatted Value &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; w.d &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 31415.93 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 5. &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 31415 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; w.d &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 31415.93 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 8.1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 31415.9 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; commaw.d &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 31415.93 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; comma8.1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 31,415.9 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; dollarw.d &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 31415.93 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; dollar10.2 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; $31,415.93 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; dollarw.d &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 31415.93 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; dollar10. &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; $31,415 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+???
+SAS has dozens of formats you can use. Let's look at some of the most common formats and see the effect they have on the numeric value. 
+The w.d format specifies the width and number of decimal place. The 5. format applied here is the same as 5.0, so no decimal places are displayed. SAS rounds the displayed value to the nearest integer. By applying the 8.1 format, the value is displayed rounded to one decimal place. It's okay that the format width is 8, even though the digits and decimal point fill only seven positions. 
+The COMMA format inserts a comma. Specifying a width of 8.1 rounds the value to the nearest tenth. The DOLLAR format inserts a dollar sign in the displayed value. Keep in mind that the width must accommodate the total width of the displayed value, including the dollar sign, commas, decimal point, and decimal places. If you specify DOLLAR 10.2, the entire value is displayed. If we just use DOLLAR10., the formatted value is rounded to the nearest dollar. 
+
+---
+background-color: #6495ED
+
+# Your Turn
+
+1. Go to support.sas.com/documentation. Click Programming: SAS 9.4 and Viya.
+2. In the Syntax - Quick Links section, under Language Elements, select Formats.
+3. What does the datew.d format do?
+
+In each of the following, consider how would June 17, 2021 be displayed if formatted:
+
+4. using format date7. vs format date 9.? 
+5. using mmddyy10. format do? The monyy7. format? 
+6. using the monname. format do? 
+7. using the weekdate format do?
+
+Take notes of these for easy reference!
+
+---
+## Case Study
+
+GOAL: Using the `class_birthdate` data, print the data for all students older than 13. Now, and going forward,  be sure to create reports in a way that will make the most sense to a general audience.
+
+Save this script as t3\_cs\_formats.sas.
+
+???
+
+/*First, print data for students older than 13*/
+proc print data=s40dat.class_birthdate;
+    where Age &gt; 13;
+run;
+/*To make this more interpretable to a general audience, we will require
+some formats on: Height, Weight, and Birthdate*/
+
+/*
+Height, Weight: round to whole numbers for this report
+Birthdate: 
+*/
+
+proc print data=s40dat.class_birthdate;
+    where Age &gt; 13;
+    format Height Weight 3. Birthdate date9.;
+run;
+
+/*END INITIAL CODING*/
+
+/*This is great - but let's say we wanted to sort the data for the report
+NEW SYNTAX ----&gt; The sort step.
+*/
+
+proc sort data = s40dat.class_birthdate out = class_birthdate_sorted;
+  by Birthdate;
+run;
+
+proc print data=class_birthdate_sorted;
+    where Age &gt; 13;
+    format Height Weight 3. Birthdate date9.;
+run;
+
+
+---
+## The Sort Step
+
+
+```r
+proc sort data=input-table &lt;OUT=output-table&gt;;
+         BY &lt;DESCENDING&gt; col-name(s);
+RUN;
+```
+
+* Code within `&lt; &gt;` is optional. 
+* Omitting the `out = ` argument will overwrite the existing data set with the sorted output. 
+* Including `&lt;descending&gt;` will sort in descending order rather than ascending. 
+* You can sort by multiple columns!
+
+
+```r
+proc sort data = s40dat.class_birthdate out = class_birthdate_sorted;
+  by Sex descending Birthdate;
+run;
+
+/*
+As an aside: we specified out = class_birthdate_sorted. 
+This implicitly saved the data set class_birthdate_sorted in the temporary work library.
+we could have EQUIVALENTLY specified out = work.class_birthdate_sorted.*/
+```
+
+???
+Note: in the last example, we specified out = class_birthdate_sorted. This implicitly saved the data set class_birthdate_sorted in the work library. 
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

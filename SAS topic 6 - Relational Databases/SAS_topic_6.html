@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Relational Databases</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr. Lendie Follett" />
+    <meta name="date" content="2022-04-07" />
+    <script src="SAS_topic_6_files/header-attrs-2.9/header-attrs.js"></script>
+    <link href="SAS_topic_6_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="SAS_topic_6_files/remark-css-0.0.1/hygge-duke.css" rel="stylesheet" />
+    <link href="SAS_topic_6_files/remark-css-0.0.1/tamu-fonts.css" rel="stylesheet" />
+    <script src="SAS_topic_6_files/kePrint-0.0.1/kePrint.js"></script>
+    <link href="SAS_topic_6_files/lightable-0.0.1/lightable.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Relational Databases
+### Dr. Lendie Follett
+### 2022-04-07
+
+---
+
+
+
+&lt;style type="text/css"&gt;
+  .reveal p {
+    text-align: left;
+  }
+  .reveal ul {
+    display: block;
+  }
+  .reveal ol {
+    display: block;
+  }  
+&lt;/style&gt;
+
+
+## Combining multiple data sources
+
+* Often (usually) the analyses you encounter will require the use of multiple sources of data. 
+* For future discussions, we may refer to datasets (SAS) and data frames (R) simply as tables.
+* The collection of multiple tables are called \textbf{relational data} because it's the relationships between the data sets that convey the meaningful information needed to complete an analysis.
+
+
+---
+
+## Introduction to set theory
+
+* It will be helpful to think of the relationships between tables in terms of verbs used in set theory
+* A **set** is a collection of elements.
+  - `\(L = \{1,2,3,4\}\)`: "Set L contains elements `\(1,2,3\)` and `\(4\)`"
+  - `\(R = \{1,3,5,6,7\}\)`: "Set R contains elements `\(1,3,5,6\)`, and `\(7\)`"
+  
+--
+  
+* Why do we talk about set theory in a programming class?
+
+--
+
+  - It is useful to view tables as sets containing observations. 
+
+
+
+
+---
+## Introduction to set theory
+
+.pull-left[
+![ ](SAS_topic_6_files/figure-html/unnamed-chunk-1-1.png)
+]
+.pull-right[
+* The **union** of L and R is the set that contains the elements that are either members of L or members of R or members of both L and R.
+]
+
+---
+## Introduction to set theory
+
+.pull-left[
+![ ](SAS_topic_6_files/figure-html/unnamed-chunk-2-1.png)
+]
+.pull-right[
+
+* The **intersection** of L and R is the set that contains elements that are members of both L and R.
+
+]
+
+
+---
+
+## Keys
+
+* In terms of tables, *membership* is determined by one or more **key** variables (columns). There are two types of keys. In RDS (Wickham), these are defined as:
+
+  *  A **primary** key is one or more variables which can uniquely identify an observation in a table.
+  *  A **foreign** key uniquely identifies an observation in another table. 
+
+*  A relation between a pair of tables is formed by matching **primary keys** and corresponding **foreign keys**.
+
+
+
+
+---
+## Key Examples
+
+Identifying .yellow[primary keys] and .blue[foreign keys].
+
+
+&lt;table class="table" style="width: auto !important; float: left; margin-right: 10px;"&gt;
+&lt;caption&gt;data set: club&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; student_id &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; last &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; club &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: yellow !important;"&gt; 6422 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Jones &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: yellow !important;"&gt; 3730 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: yellow !important;"&gt; 5792 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: yellow !important;"&gt; 9078 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Ma &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;table class="table" style="width: auto !important; "&gt;
+&lt;caption&gt;data set: gpa&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; student_id &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; gpa &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; major &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: yellow !important;"&gt; 9382 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.3 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: blue !important;"&gt; Stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: yellow !important;"&gt; 6422 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.7 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: blue !important;"&gt; Stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: yellow !important;"&gt; 3730 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.9 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: blue !important;"&gt; Math &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: yellow !important;"&gt; 5792 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.0 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: blue !important;"&gt; Comp Sci &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;table&gt;
+&lt;caption&gt;data set: major&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; major &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; college &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: yellow !important;"&gt; Stat &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; LAS &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: yellow !important;"&gt; Math &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; LAS &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: yellow !important;"&gt; Comp Sci &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; LAS &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: yellow !important;"&gt; Mgmt &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Business &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+???
+In simple cases (like the one illustrated), a single variable is enough to identify an observation. 
+
+For example, in the stat club data set, the student id variable is sufficient to identify a row of data. Thus it is a primary key. 
+
+Likewise for the gpa dataset. 
+
+major is a primary key for the major dataset. It is a foreign key for the gpa dataset!
+
+---
+
+## Joins
+
+*  Joins combine a pair of tables (say, table L and table R) based matching keys to form a single table (say, X). 
+*  The resulting table, X, will contain variables from both tables. The observations present in X depend on the **join type**.
+*  There are several types of joins. We will cover:
+
+  *  Inner join
+  *  Left join
+  *  Right join
+  *  Full join
+
+*  The correct type of join will depend on the particular goal.
+
+
+---
+
+
+## Inner Join
+![ ](SAS_topic_6_files/figure-html/unnamed-chunk-4-1.png)
+
+* Match observations for all matching pairs of keys.
+* Important characteristic: observations corresponding to unmatched keys are **not included in the resulting table**.
+
+???
+
+Set theory analogy: intersection
+---
+class: middle, center
+## Need GPAs of stat club members
+
+---
+## Inner Join
+
+&lt;table class="table" style="width: auto !important; float: left; margin-right: 10px;"&gt;
+&lt;caption&gt;data set: club&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; student_id &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; last &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; club &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 6422 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Jones &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 3730 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 5792 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 9078 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Ma &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;table class="table" style="width: auto !important; "&gt;
+&lt;caption&gt;data set: gpa&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; student_id &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; gpa &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; major &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 9382 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.3 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 6422 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 3.7 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 3730 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 2.9 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Math &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 5792 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 4.0 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Comp Sci &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;table&gt;
+&lt;caption&gt;data set: inner&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; student_id &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; last &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; club &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; gpa &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; major &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 3730 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.9 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Math &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 5792 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.0 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Comp Sci &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 6422 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Jones &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.7 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Stat &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+---
+
+
+
+## Left Join
+![ ](SAS_topic_6_files/figure-html/unnamed-chunk-6-1.png)
+
+
+*  For each observation in `\(L\)`, look for matching key in `\(R\)`.
+*  Keeps all observations in `\(L\)`.
+
+
+---
+class: middle, center
+## Add GPA information, wherever possible, to the Stat club member table
+
+---
+## Left join
+&lt;table class="table" style="width: auto !important; float: left; margin-right: 10px;"&gt;
+&lt;caption&gt;data set: club&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; student_id &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; last &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; club &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 6422 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Jones &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 3730 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 5792 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 9078 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Ma &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;table class="table" style="width: auto !important; "&gt;
+&lt;caption&gt;data set: gpa&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; student_id &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; gpa &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; major &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 9382 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.3 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 6422 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 3.7 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 3730 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 2.9 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Math &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 5792 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 4.0 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Comp Sci &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;table&gt;
+&lt;caption&gt;data set: left&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; student_id &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; last &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; club &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; gpa &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; major &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 3730 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.9 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Math &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 5792 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.0 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Comp Sci &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 6422 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Jones &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.7 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 9078 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Ma &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+## Right Join
+![ ](SAS_topic_6_files/figure-html/unnamed-chunk-8-1.png)
+
+
+* For each observation in `\(R\)`, look for matching key in `\(L\)`.
+* Keeps all observations in `\(R\)`.
+
+---
+
+class: middle, center
+## Identify whether students in GPA table are stat club members
+
+---
+## Right join
+&lt;table class="table" style="width: auto !important; float: left; margin-right: 10px;"&gt;
+&lt;caption&gt;data set: club&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; student_id &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; last &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; club &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 6422 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Jones &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 3730 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 5792 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 9078 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Ma &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;table class="table" style="width: auto !important; "&gt;
+&lt;caption&gt;data set: gpa&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; student_id &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; gpa &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; major &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 9382 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 3.3 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 6422 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 3.7 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 3730 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 2.9 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Math &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 5792 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 4.0 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Comp Sci &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;table&gt;
+&lt;caption&gt;data set: right&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; student_id &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; last &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; club &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; gpa &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; major &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 3730 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.9 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Math &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 5792 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.0 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Comp Sci &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 6422 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Jones &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.7 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 9382 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.3 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Stat &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+---
+## Full Join
+
+![ ](SAS_topic_6_files/figure-html/unnamed-chunk-10-1.png)
+
+* Match keys wherever possible.
+* Keeps all observations in `\(L\)` and keeps all observations in `\(R\)`.
+???
+set theory analogy: union
+
+---
+class: middle, center
+## I want to know information about any student who is either in stat club or in the GPA table
+
+---
+## Full Join
+&lt;table class="table" style="width: auto !important; float: left; margin-right: 10px;"&gt;
+&lt;caption&gt;data set: club&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; student_id &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; last &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; club &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 6422 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Jones &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 3730 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 5792 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 9078 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Ma &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; stat &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;table class="table" style="width: auto !important; "&gt;
+&lt;caption&gt;data set: gpa&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; student_id &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; gpa &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; major &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 9382 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 3.3 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 6422 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 3.7 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 3730 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 2.9 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Math &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; 5792 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 4.0 &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Comp Sci &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;table&gt;
+&lt;caption&gt;data set: full&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; student_id &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; last &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; club &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; gpa &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; major &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 3730 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.9 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Math &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 5792 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Johnson &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.0 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Comp Sci &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 6422 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Jones &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.7 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Stat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 9078 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Ma &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; stat &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 9382 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.3 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Stat &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+---
+## Before we begin...
+
+* Real data is messy.
+* If the key being used to merge is a character string, make sure values are spelled consistently across data sets. 
+  * e.g., "a7392" and "A7392" will NOT match in a merge/join.
+* If key is a character string that involves all numeric characters, make sure leading 0s haven't been lost. 
+  * e.g., in Excel, a value of 00073615 will be automatically converted to 73615. If the data was manipulated in Excel before imported to R and SAS, this could present an issue.
+  
+  
+---
+## Joins in SAS  
+  
+* Typically, we create a single SAS data set from another single SAS data set using the `set` statement
+within a data step. e.g,
+
+```r
+data work.club;
+  set s40dat.club;
+run;
+```
+
+--
+
+* We can replace that with a `merge` statement to accomplish joining two (or more) SAS data sets.
+
+```r
+data work.merged;
+*  merge s40dat.club s40dat.gpa;
+   by student_id;
+run;
+```
+--
+* The merge statement will be used in conjunction with a `by` statement that species the common key variable(s).
+
+---
+## Joins in SAS
+
+
+* SAS requires that input data sets be sorted by the common key variable(s) prior to the join.
+
+* Thus, your code sequence may look *something* like:
+
+```r
+/*Sort both data sets by key(s)*/
+proc sort data = data-x;
+by list-key(s);
+run;
+
+proc sort data = data-y;
+by list-key(s);
+run;
+
+/*Perform merge*/
+data output-data ;
+merge data-x&lt;(in = idxx )&gt; data-y&lt;(in = idxy )&gt;;
+by list-key(s) ;
+&lt;if expression-involving-idxs &gt;;
+run;
+```
+
+* Finally, the type of join can be determined using the `in =` data set option (this is new to us) along with an appropriate subsetting if statement (also new to us).
+
+---
+## Wait, what was that about `in = `?
+
+* The `merge` statement will ask SAS to perform a full join. Always. 
+* We can perform other types of joins by removing certain observations based on membership. 
+* The in = data set option creates a temporary binary (0/1)
+variable indicating whether the observation was a member of that particular data set.
+* Then, we can use those temporary variables (named idxx
+and idxy in the below example) to subset and thus perform
+the correct join.
+* We subset using the `if` statement, which can be used just as we used the `where` statement.
+```r
+/*Perform merge*/
+data output-data ;
+merge data-x&lt;(in = idxx )&gt; data-y&lt;(in = idxy )&gt;;
+by list-key(s) ;
+&lt;if expression-involving-idxs &gt;;
+run;
+```
+---
+## Joins in SAS
+
+In each of the following merges, we create temporary, binary variables that we name a and b. Then, we use these to filter (or not!) observations from the full join to create an inner, full, left, or right join.
+
+.pull-left[
+```r
+/*inner join*/
+data merged_data;
+merge student(in = a) gpa(in = b);
+by student_id;
+*if a and b;
+run;
+```
+]
+.pull-right[
+```r
+/*full join*/
+data merged_data;
+merge student(in = a) gpa(in = b);
+by student_id;
+*/*NO IF STATEMENT! (keep all observations)*/
+run;
+```
+]
+
+.pull-left[
+```r
+/*left join*/
+data merged_data;
+merge student(in = a) gpa(in = b);
+by student_id;
+*if a;
+run;
+```
+]
+.pull-right[
+```r
+/*right join*/
+data merged_data;
+merge student(in = a) gpa(in = b);
+by student_id;
+*if b;
+run;
+```
+]
+
+---
+## Case Study
+
+*Have*: A data set containing NFL draft results. A separate data set containing combine results of college football players. 
+
+*Want*: Find meaningful associations between combine results and draft results. Essentially, what athletic measurements are most important for a desirable draft outcome?
+
+---
+
+## Case Study
+### Football data: Player stats
+A data set containing combine results (various athletic measurements) of college football players from 1999 to 2015. 
+&lt;table class="table" style="font-size: 10px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; Year &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Player &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; College &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; POS &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Heightin &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Weightlbs &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Wonderlic &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; X40Yard &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; BenchPress &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; VertLeapin &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; BroadJumpin &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Shuttle &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; X3Cone &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 2014 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A.C. Leonard &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Tennessee State &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TE &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 74 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 252 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 4.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 20 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 34.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 127 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 2015 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A.J. Cann &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; South Carolina &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; OG &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 75 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 313 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; *5.18 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 26 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 2015 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A.J. Derby &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Arkansas &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TE &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 76 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 255 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; *4.73 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 15 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 2010 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A.J. Edds &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Iowa &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; OLB &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 76 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 246 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 4.62 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 16 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 33.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 117 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.28 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 7.19 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 2011 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A.J. Green &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Georgia &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; WR &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 76 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 211 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 10 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 4.48 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 18 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 34.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 126 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.21 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6.91 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 2006 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A.J. Hawk &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Ohio State &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; OLB &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 73 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 248 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 4.59 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 24 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 40.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 115 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.96 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6.82 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+## Case Study
+### Football data: Draft results
+A data set containing draft results from 1999 to 2015
+&lt;table class="table" style="font-size: 10px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; Year &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Rnd &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Pick &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; NFLteam &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Player &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Pos &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; College &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Conf &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 2015 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 67 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Jacksonville Jaguars &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A. J. Cann &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; G &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; South Carolina &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; SEC &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 2007 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 105 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Detroit Lions &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A. J. Davis &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; CB &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; NC State &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; ACC &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 2015 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 6 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 202 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; New England Patriots &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A. J. Derby &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Arkansas &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; SEC &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 2010 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 119 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Miami Dolphins &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A. J. Edds &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; LB &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Iowa &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Big Ten &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 2001 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 155 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Philadelphia Eagles &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A. J. Feeley &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; QB &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Oregon &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Pac-10 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 2011 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Cincinnati Bengals &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A. J. Green &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; WR &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Georgia &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; SEC &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

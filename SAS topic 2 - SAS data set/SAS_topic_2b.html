@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Accessing Data in SAS</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr. Lendie Follett" />
+    <meta name="date" content="2022-12-13" />
+    <script src="SAS_topic_2b_files/header-attrs-2.14/header-attrs.js"></script>
+    <link href="SAS_topic_2b_files/remark-css-0.0.1/hygge-duke.css" rel="stylesheet" />
+    <link href="SAS_topic_2b_files/remark-css-0.0.1/tamu-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Accessing Data in SAS
+]
+.author[
+### Dr. Lendie Follett
+]
+.date[
+### 2022-12-13
+]
+
+---
+
+&lt;style type="text/css"&gt;
+  .reveal p {
+    text-align: left;
+  }
+  .reveal ul {
+    display: block;
+  }
+  .reveal ol {
+    display: block;
+  }  
+&lt;/style&gt;
+
+
+
+## Accessing Data (libraries)
+
+* Suppose we wanted to access data that doesn't live in the pre-loaded `sashelp` library; for example, nyc_bike.sas7bdat.
+* We can use a hardcoded filepath to the SAS table we want to access. 
+
+--
+
+
+```r
+proc contents data = "/home/u47369495/my_shared_file_links/u47369495/data/nyc_bike.sas7bdat";
+run;
+ 
+proc print data = "/home/u47369495/my_shared_file_links/u47369495/data/nyc_bike.sas7bdat"(obs = 10);
+run;
+ 
+proc means data = "/home/u47369495/my_shared_file_links/u47369495/data/nyc_bike.sas7bdat";
+var temp_high;
+run;
+```
+
+--
+
+* There are a few issues with operating as above, by specifying the full filepath every time we reference the data set. 
+
+???
+
+1. Highlight the two parts of the filepath: where the data is located and the name and type of the data. 
+
+2. What are the issues?
+ 
+What if I write a longer, more complex program? It would be tedious to have to repeatedly provide the full path and file name each time! 
+What if the data changes locations? You would have to edit my program in multiple places! 
+What if the type of data I want to read is Excel or Teradata? Providing a simple file path to those files won't work. SAS needs more specific instruction for how to read other types of structured data
+
+---
+## Accessing Data (libraries) 
+
+
+* Definition: A *SAS library* is a SAS-recognized collection of one or more **SAS data sets** (recall previous def).
+
+* Drawer = SAS library, File = SAS data set
+
+
+&lt;img src="Images/sas_library.jpg" width="25%" height="15%" style="display: block; margin: auto;" /&gt;
+
+* sashelp is a library that we've already been using! It contains pre-loaded (and, yes, boring) datasets. 
+
+???
+
+SAS libraries provide a way to specify the two required pieces of information – the location and file type – in a very simple and efficient way. You can think of a library as a collection of data files that are the same type and in the same location. 
+
+
+---
+
+
+## Libraries: Creating one
+
+```r
+libname libref "filepath/to/your/folder/containing/sas/datasets";
+```
+
+* `libname`: the keyword of this *global statement* 
+* You modify 'libref' to whatever you want your library named
+* You modify the filepath inside " " to point to the folder containing SAS data sets. 
+* Typically, a `libname` statement is placed near the top/beginning of your code so that it can be used throughout.
+
+--
+
+
+
+```r
+/*Specify the library*/
+libname s40dat '/home/u47369495/my_shared_file_links/u47369495/data/';
+```
+
+--
+
+* The libref must 
+  1. be eight characters or less, 
+  2. must start with either a letter or underscore, and 
+  3. can include only letters, numbers, and underscores. 
+
+???
+
+You create a library with the LIBNAME statement. This is one of the global statements in SAS that does not need a RUN statement at the end. 
+
+We begin with the keyword LIBNAME, followed by what is referred to as a library reference, or libref. The libref is the name of the library. 
+
+Finally, we need to provide the location or connection information for the data we want to read. That can be a physical path or directory, or other options to connect to a database. 
+
+
+
+---
+
+## Types of Libraries
+
+* In general, the programmer must define the libraries needed at the beginning of each SAS session
+* However, SAS automatically provides one temporary and one permanent SAS library
+* These are called **work** (temporary) and **sashelp** (permanent) 
+* We used sashelp in our examples - e.g., sashelp.heart is the heart data set, located in sashelp library. sashelp also contains other sample data sets.
+* The contents of temporary libraries are deleted at the end of each SAS session
+* The contents of permanent libraries are stored until deleted by you
+
+---
+## Libraries: Using two-level data set names
+
+* All SAS data sets have a two-level name consisting of 
+
+  1. the libref and 
+  2. the data set name,
+separated by a period.
+
+* For example, sashelp.heart refers to a SAS data set named "heart" that is located within the sashelp library.
+* If a data set is in the work library (temporary), a one-level name may be used. That is, the library name can be omitted.
+
+* If the data set is in a permanent library, the two-level name must be used. 
+
+---
+## Libraries: Using them
+
+From this:
+
+```r
+proc contents data = "/home/u47369495/my_shared_file_links/u47369495/data/nyc_bike.sas7bdat";
+run;
+ 
+proc print data = "/home/u47369495/my_shared_file_links/u47369495/data/nyc_bike.sas7bdat"(obs = 10);
+run;
+```
+
+To this:
+
+```r
+/*Specify the library*/
+libname s40dat '/home/u47369495/my_shared_file_links/u47369495/data/';
+
+
+/*Use two-level name to access data*/
+proc contents data = s40dat.nyc_bike;
+run;
+
+proc print data = s40dat.nyc_bike(obs = 10);
+run;
+```
+---
+## Libraries: Using them
+* In many companies (and in this class...), you aren't allowed to modify the 'master' data. In that case, you'd do something like this:
+
+```r
+
+/*Specify the library*/
+libname s40dat '/home/u47369495/my_shared_file_links/u47369495/data/';
+
+*/*create new sas data set as a copy of class_data.nyc_bike*/
+*data bb;
+*set s40dat.nyc_bike
+*run;
+
+/*Use one-level name to access data from work library*/
+proc contents data = bb;
+run;
+
+/*Or, use two-level name to access data*/
+proc print data = work.bb(obs = 10);
+run;
+ 
+proc means data = bb;
+var temp_high;
+run;
+
+```
+
+---
+
+background-color: #6495ED
+
+## Your Turn 
+
+1. Open a new program. Write a LIBNAME statement to create a library named s40dat that reads SAS tables in the shared data folder. 
+
+2. Run the code and verify that the library was successfully assigned in the log.
+
+3. Go back to your program and save the program as t2\_yt\_libname.sas in your main course files folder. 
+
+???
+
+/*Specify a library pointing to class data*/
+
+libname s40dat '/home/u47369495/my_shared_file_links/u47369495/data/';
+
+
+---
+
+
+## Importing Comma-delimited (CSV) Files 
+
+* In Stat 40, we will focus on importing csvs. 
+
+--
+
+* "Importing csv": taking a csv file and converting it to an equivalent SAS data set that can be manipulated in SAS. 
+
+--
+
+
+```r
+PROC IMPORT DATAFILE="path/file-name.csv" DBMS=CSV
+                          OUT=output-table;
+RUN;
+```
+
+--
+
+* Replace `"path/file-name.csv"` with the complete file path AND filename (with .csv extension) to point SAS to *exactly* where the csv is currently living
+* `dbms=csv` tells SAS to expect a CSV file (as opposed to a .txt or .xlsx)
+* Replace `output-table` with one (if using work library) or two-level SAS output table name. 
+
+???
+A CSV is a 'friendly' way to store source data because it is software-agnostic.
+
+identify the library and name of SAS output table, the path and complete filename, and the type of file 
+
+---
+
+## Importing Comma-delimited (CSV) Files 
+
+
+* In Stat 40, we will focus on importing csvs. 
+
+* "Importing csv": taking a csv file and converting it to an equivalent SAS data set that can be manipulated in SAS. 
+
+
+```r
+PROC IMPORT DATAFILE="path/file-name.csv" DBMS=CSV
+                          OUT=output-table &lt;REPLACE&gt;;
+	&lt;GUESSINGROWS=n|MAX;&gt;
+RUN;
+```
+
+* There are some options that you may find useful when using the proc import step. 
+* Add `replace` in the proc import statement to indicate the SAS output table should be replaced if it already exists. 
+* `GUESSINGROWS=n / MAX`: SAS to use first n / all rows to make column attribute decisions. 
+
+???
+
+There are some options that you may find useful when using the proc import step. 
+
+The REPLACE option can be added to indicate that the SAS output table should be replaced if it already exists. 
+
+By default, SAS scans the first 20 rows of the data to make its best guess for the column attributes, including type and length. It's possible that SAS might incorrectly assume a column’s type or length based on the values found in those initial rows. You can use the GUESSINGROWS= option to provide a set number or use the keyword MAX to examine all rows. SAS scans the number of rows that you specify to determine type and length of each column in the imported table. 
+
+---
+
+## Case Study
+
+.center[
+GOAL: Import Ames housing sales data, using `guessingrows=MAX` so that SAS looks at all rows before making decisions about column attributes. Re-import it and view log messages. Save script as t2_cs_import.sas.]
+
+
+
+???
+
+see t2_cs_import.sas
+
+proc import out = ah
+datafile = "/home/u47369495/my_shared_file_links/u47369495/data/AmesHousing_sub_luxury.csv"
+dbms = csv;
+run;
+/*examine log*/
+
+
+/*
+oops, we forgot to set guessingrows = MAX. 
+just in case, we better re-read in the data. 
+run it again and examine log
+*/
+proc import out = ah
+datafile = "/home/u47369495/my_shared_file_links/u47369495/data/AmesHousing_sub_luxury.csv"
+dbms = csv;
+guessingrows = MAX;
+run;
+
+/*include a replace option to fix*/
+proc import out = ah
+datafile = "/home/u47369495/my_shared_file_links/u47369495/data/AmesHousing_sub_luxury.csv"
+dbms = csv replace;
+guessingrows = MAX;
+run;
+
+---
+
+## Where have we been
+
+* We know what temporary and permanent SAS libraries are
+
+* We know how to read in data from existing SAS libraries containing SAS data sets. 
+
+* We know how to read in CSV files and create a SAS data set. 
+
+
+---
+## Where we are going
+
+
+* Exploring data with procedures
+  - proc print, 
+  - proc means, 
+  - proc univariate,
+  - and more!
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

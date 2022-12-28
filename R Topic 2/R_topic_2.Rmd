@@ -1,0 +1,838 @@
+
+---
+title: "Introduction to R (Part 2) - Data Visualization"
+author: "Dr. Lendie Follett"
+date: '`r format(Sys.Date())`'
+output:
+  xaringan::moon_reader:
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      highlightSpans: true
+      ratio: "16:9"
+    includes:
+        after_body: insert-logo.html
+
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(flair)
+library(kableExtra)
+
+hook_source <- knitr::knit_hooks$get('source')
+knitr::knit_hooks$set(source = function(x, options) {
+  x <- stringr::str_replace(x, "^[[:blank:]]?([^*].+?)[[:blank:]]*#<<[[:blank:]]*$", "*\\1")
+  hook_source(x, options)
+})
+```
+## Working with packages
+
+For the next exercises we need to install a *package*. A  *package* is a set of functions created by the wider R community that you can add on to make base R even more powerful. We will start our journey with the `ggplot2` package. 
+
+Install the package:
+```{r ggplot2_install,eval=FALSE, echo=TRUE}
+#You only have to do this once
+install.packages("ggplot2")
+```
+
+Load the package:
+```{r ggplot2_lib,eval=TRUE, echo=TRUE}
+#You have to do this every time you re-open R 
+#and want to use the package
+library(ggplot2)
+```
+
+---
+## Data frames 
+
+* The most common way we work with data in R is through data frames
+* In this class, we will get familiar with data frames through graphics
+* R has some pre-loaded data frames that we can get started with
+* In the **console**, type `?diamonds` to learn about this particular data set. Read the description of each of the variables
+
+---
+## Initial Exploration of Data Frames
+For a data frame named d, we can (and should!) use:
+
+* `d`: print data
+* `head(d, n = 10)`: print first 10 rows
+* `tail(d, n = 5)`: print last 5 rows
+* `summary(d)`: print numerical summary of each column in d
+* `str(d)`: print the structure of the data
+* `dim(d)`: print the dimensions (number of rows, columns)
+
+These are essential to get to know your data.
+???
+Together:Open a new script named R_t2_code.R. and explore the diamonds data this way.
+Talk about what each of those functions do. 
+head gives first n rows
+tail gives last n rows
+summary gives summary statistics of ALL COLUMNS
+str() gives variable types, a few of the first observations, and the number of rows and the number of columns
+dim() just gives the number of rows and columns
+
+---
+##Extracting bits from a data frame
+###Indexing
+
+* In R, it is easy to pick and choose rows and columns to view (or manipulate...)
+* First note that a data frame has 2 *dimensions*: (1) rows and (2) columns
+* We can use what is called *positional indexing* to extract the elements we want from both dimensions 
+
+The syntax of positional indexing looks like:
+
+```{r, eval=FALSE}
+d[row_position, column_position]
+#or
+d[row_position, column_name]
+```
+
+
+---
+##Extracting bits from a data frame
+###Indexing
+
+* In R, it is easy to pick and choose rows and columns to view (or manipulate...)
+* First note that a data frame has 2 *dimensions*: (1) rows and (2) columns
+* We can use what is called *positional indexing* to extract the elements we want from both dimensions 
+
+The syntax of positional indexing looks like:
+
+```{r, eval=FALSE}
+d[2, ] #extract second row
+
+```
+
+```{r, echo=FALSE}
+
+data.frame(column_name1 = rep("X", 5), column_name2 = rep("X", 5), column_name3 = rep("X", 5)) %>%
+  kbl() %>%
+    kable_paper(bootstrap_options = "striped", full_width = F) %>%
+    row_spec(2,  background = "yellow")
+
+```
+
+---
+##Extracting bits from a data frame
+###Indexing
+
+* In R, it is easy to pick and choose rows and columns to view (or manipulate...)
+* First note that a data frame has 2 *dimensions*: (1) rows and (2) columns
+* We can use what is called *positional indexing* to extract the elements we want from both dimensions 
+
+The syntax of positional indexing looks like:
+
+```{r, eval=FALSE}
+d[,3 ] #extract third column
+
+```
+
+```{r, echo=FALSE}
+
+data.frame(column_name1 = rep("X", 5), column_name2 = rep("X", 5), column_name3 = rep("X", 5)) %>%
+  kbl() %>%
+    kable_paper(bootstrap_options = "striped", full_width = F) %>%
+    column_spec(3,  background = "yellow")
+
+```
+---
+
+##Extracting bits from a data frame
+###Indexing
+
+* In R, it is easy to pick and choose rows and columns to view (or manipulate...)
+* First note that a data frame has 2 *dimensions*: (1) rows and (2) columns
+* We can use what is called *positional indexing* to extract the elements we want from both dimensions 
+
+The syntax of positional indexing looks like:
+
+```{r, eval=FALSE}
+d[c(2:3),] #extract multiple rows
+
+```
+
+```{r, echo=FALSE}
+
+data.frame(column_name1 = rep("X", 5), column_name2 = rep("X", 5), column_name3 = rep("X", 5)) %>%
+  kbl() %>%
+    kable_paper(bootstrap_options = "striped", full_width = F) %>%
+    row_spec(2:3,  background = "yellow")
+
+```
+
+???
+
+same method can be used to extract multiple columns
+---
+##Extracting bits from a data frame
+###Indexing
+
+
+* In R, it is easy to pick and choose rows and columns to view (or manipulate...)
+* First note that a data frame has 2 *dimensions*: (1) rows and (2) columns
+* We can use what is called *positional indexing* to extract the elements we want from both dimensions 
+
+Say we have data frame `d`. The syntax of positional indexing looks like:
+
+```{r, eval=FALSE}
+d[2:3,"column_name1" ] #extract the second and third rows of "column_name1"
+
+```
+
+```{r, echo=FALSE}
+
+data.frame(column_name1 = rep("X", 5), column_name2 = rep("X", 5), column_name3 = rep("X", 5)) %>%
+  kbl() %>%
+    kable_paper(bootstrap_options = "striped", full_width = F) %>%
+    column_spec(1,  background = c("white","yellow", "yellow", "white", "white"))
+
+```
+
+---
+## Extracting bits from a data frame
+* An alternative (for columns, anyway) to positional indexing is the `$` syntax
+* `d$variable_name` basically means I want to extract `variable_name` which can be found in object `d`.
+```{r, eval = FALSE}
+d$variable_name
+d$variable_name[row_position]
+
+```
+
+```{r, eval=FALSE}
+d$column_name1 #extract the column named "column_name1"
+
+```
+
+```{r, echo=FALSE}
+
+data.frame(column_name1 = rep("X", 5), column_name2 = rep("X", 5), column_name3 = rep("X", 5)) %>%
+  kbl() %>%
+    kable_paper(bootstrap_options = "striped", full_width = F) %>%
+    column_spec(1,  background = c("yellow","yellow", "yellow", "yellow", "yellow"))
+
+```
+
+???
+Play with diamonds data in R_t2_code.R
+Prompt the question of what drives price of a diamond. 
+
+---
+## Data Visualization - common univariate plot types (refresher)
+
+* bar chart: a chart displaying groups of data with bars having a length proportional to the value corresponding to each group.
+* histogram: a type of bar chart used to show the frequency, or relative frequency, with which data points take on values. It shows the shape of the distribution of continuous data points.
+* box plot (a.k.a box and whisker plot): a graphical representation of the quantiles and outliers of a continuous variable.
+* violin plot: like a box plot, but more detailed (later)
+
+---
+## Data Visualization - common multivariate plot types
+* multivariate plot: displaying two or more columns/variables at once, usually to illustrate the relationship between them
+* Many univariate plot types can be extended to represent multivariate distributions using additional aesthetics such as *color* and *facets*. 
+* The most common way to display a two dimensional relationship is with a *scatter plot*
+* scatter plot: a plot displaying the joint distribution of two continuous variables by mapping the value of one variable to the x-axis and the value of the other variable to the y-axis.
+
+---
+## Why do we use ggplot2? Why not base-R?
+
+* Industry standards and expectations
+* Flexibility 
+
+* Also,
+
+```{r, echo=FALSE, fig.keep='all', fig.show='hold',out.width = '25%', out.height = '25%'}
+
+ plot(diamonds$carat, diamonds$price)
+
+ ggplot(data = diamonds) + 
+  geom_point(aes(x = carat, y = price, colour = clarity), alpha = I(.3)) +
+  labs(x = "Carat", y = "Price") +
+  scale_y_continuous(labels=scales::dollar_format()) +
+   scale_colour_brewer("Diamond\nClarity",palette = "Spectral")
+
+
+```
+
+--
+
+I mean, seriously.
+
+---
+
+## Building a ggplot
+
+
+* To create a plot, we start with the function `ggplot()` - this creates a coordinate system that can be built upon. 
+* The function `ggplot()` takes in the data set of interest as the first argument. For example,
+```{r, eval=TRUE, out.width = "20%", out.height = "20%"}
+ggplot(data = diamonds)
+#not very interesting
+```
+
+---
+
+## Building a ggplot
+
+* A plot is created by adding:
+    1. **one or more layers to ggplot**. Examples of layers:
+      * `geom_point()` adds a layer of points to plot (scatter plot)
+      * `geom_bar()` adds a layer of bars (bar chart)
+      * `geom_boxplot()` adds a layer of box-and-whisker plots (boxplots)
+      * MANY more....
+    2. **scale (optional)**: fine tuning how to map data to aesthetics. For example,
+      * `scale_colour_brewer()` has great colorblind-friendly palettes for categorical variables
+      * `scale_colour_distiller()`
+      * many more
+
+    3. **coordinate system (optional)**: normally Cartesian, but polar and flipped, and others are also options.
+
+    4. **facet (optional)**: useful for incorporating additional categorical variables.
+
+    5. **theme (optional)**: fonts, font sizes, text angles, colors, etc.
+
+---
+## A simple template for a ggplot
+* Text between $<$ and $>$ are to be replaced with a data set name, a geom function, and a collection of mappings, in the order of appearance
+
+```{r, eval=FALSE}
+ggplot(data = <data>) + 
+  <geom_function>(mapping = aes(<mappings>))
+```
+
+* *Important*: The mapping of aesthetics (x location, y location, color, etc...) to variables in the data set occurs within `aes()`
+
+
+---
+font-size: 40px
+
+# Let's get started.
+
+--
+
+### What clarities of diamonds are the most common? The least?
+
+
+### [*Reword* : What is the distribution of the variable `clarity`?]
+
+--
+
+### This is a question requiring a *univariate* plot of a *categorical* variable. 
+
+--
+
+### We can use a bar chart, and variations of it, to display this. 
+
+???
+
+They can program what is shown on the slides
+
+---
+
+## Visualizing the distribution of clarity
+
+We've already specified diamonds as our data set name. 
+Add the desired <span style="background:yellow">geom function</span> and a collection of mappings within aes().
+
+```{r, echo = TRUE, fig.width = 4, fig.height = 4, fig.align='center'}
+ggplot(data = diamonds) +
+  `geom_bar`(aes(x = clarity))
+
+
+
+```
+
+* Specifically, we're saying we want a barchart to count the number of times each clarity level shows up in the dataset.
+
+???
+The geom function specifies the "shape" or "geometry". basically,
+the overall appearance or type of the plot.
+
+---
+
+## Visualizing the distribution of clarity
+
+We've already specified diamonds as our data set name. 
+Add the desired geom function and a collection of <span style="background:yellow">mappings</span> within aes()".
+
+```{r, echo = TRUE, fig.width = 4, fig.height = 4, fig.align='center'}
+ggplot(data = diamonds) +
+  geom_bar(aes(x = `clarity`))
+
+
+
+```
+
+* Specifically, we're saying we want the categorical variable `clarity` to be on the x axis.
+
+???
+
+to specify mappings is to specify what data parts we want to visualize, and
+in what way.
+
+---
+
+## Visualizing the distribution of clarity
+
+We've already specified diamonds as our data set name. 
+Add the desired geom_function and a collection of mappings within <span style="background:yellow">aes()</span>.
+
+```{r, echo = TRUE, fig.width = 4, fig.height = 4, fig.align='center'}
+ggplot(data = diamonds) +
+  geom_bar(`aes`(x = clarity))
+
+```
+
+* Note that any mappings having to do with data MUST occur within aes()
+
+---
+class: show-only-last-code-result
+
+## Visualizing the distribution of clarity
+Further, we could also add some color using the <span style="background:yellow">fill</span> aesthetic.
+
+```{r, echo = TRUE, fig.width = 5, fig.height = 4, fig.align='center'}
+ggplot(data = diamonds) +
+  geom_bar(aes(x = clarity, `fill` = clarity))
+
+```
+
+
+
+???
+---
+## Visualizing the distribution of clarity
+Note the legend on the right hand side. We can add a <span style="background:yellow">theme</span> to remove it *if it contains unnecessary/redundant information.*
+
+```{r, echo = TRUE, fig.width = 4, fig.height = 4, fig.align='center'}
+ggplot(data = diamonds) +
+  geom_bar(aes(x = clarity, fill = clarity)) +
+  `theme`(legend.position = "none")
+
+```
+
+???
+Question: what happens when you replace "none" with "bottom"?
+
+---
+background-color: #6495ED
+## Your Turn
+
+
+1. What if we map a different categorical variable to the <span style="background:yellow">fill</span> aesthetic? Fill by the `cut` variable. 
+
+2. What does this plot tell us?
+
+3. Is the legend helpful now?
+
+---
+## Next question, please
+
+Before we get into what affects the price of diamonds, let's examine a numeric column. What is the distribution of the carat of diamonds?
+
+--
+
+Again, this will be a univariate plot.
+
+--
+
+Carat is continuous, so we won't do a bar plot. We could try a histogram!
+
+---
+
+## Visualizing carat
+Start out as you normally would:
+
+```{r, echo=TRUE, fig.width = 4, fig.height = 4, fig.align='center'}
+
+ggplot(data = diamonds)
+
+```
+
+---
+
+## Visualizing carat
+Add the appropriate <span style="background:yellow">geom function</span>.
+
+```{r, eval=FALSE}
+
+ggplot(data = diamonds) +
+  `geom_histogram`()
+
+```
+
+---
+
+## Visualizing carat
+Fill in only the necessary <span style="background:yellow">aesthetics</span> to start. As with `geom_bar`, the only necessary aesthetic is `x=`.
+
+```{r, fig.width = 4, fig.height = 4, fig.align='center'}
+
+ggplot(data = diamonds) +
+  geom_histogram(aes(x = `carat`))
+
+```
+
+--
+
+* What's that message talking about?
+
+---
+
+## Visualizing carat
+
+The height of the bars in a histogram represent the number of rows of data that fall into the respective *bins*. The *binwidth* can affect what we learn from a plot.
+
+```{r, out.width = "18%", out.height = "8%", fig.show='hold', message=FALSE}
+ggplot(data = diamonds) +
+  geom_histogram(aes(x = carat)) #default behavior
+ggplot(data = diamonds) +
+  geom_histogram(aes(x = carat), binwidth = .5) #(0,0.5], (0.5, 1], etc...
+ggplot(data = diamonds) +
+  geom_histogram(aes(x = carat), binwidth = .05)#(0,0.05], (0.05, 0.1], etc...
+ggplot(data = diamonds) +
+  geom_histogram(aes(x = carat), binwidth = .01)
+
+#binwidth is an argument of the function geom_histogram()
+#it doesn't involve our data so it goes OUTSIDE of aes()
+
+```
+
+???
+Why do you think we see this uneven pattern? 
+
+Why are there relatively-many diamonds occurring around 0.25, 0.5, 0.75, 1, 2, ....? And relatively few just before those threshholds?
+
+Note that this insight was covered up for the default binwidth; it's good to explore!
+---
+
+# The big question:
+
+--
+
+## What affects the price of a diamond? We have carat, color, clarity, and cut. 
+
+--
+
+## Let's start by examining the relationship between carat (numeric) and price (also numeric).
+
+--
+
+## This suggests a scatterplot.
+
+---
+
+## Visualizing what drives price
+Start out as you normally would:
+
+```{r, eval=FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
+
+ggplot(data = diamonds)
+
+```
+
+--
+
+We want a scatter plot, which can be obtained using `geom_point()`
+
+--
+
+```{r, eval=FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
+
+ggplot(data = diamonds) +
+geom_point(aes())
+
+```
+
+--
+
+Here, we have 2 mappings to take care of since a scatterplot requires something on the <span style="background:yellow">x-axis</span> and on the <span style="background:yellow">y-axis</span>!
+
+
+```{r, eval=FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
+
+ggplot(data = diamonds) +
+geom_point(aes(`x` = carat, `y` = price))
+
+```
+---
+.pull-left[
+## Visualizing what drives price
+```{r, eval=TRUE, fig.width = 4, fig.height = 4, fig.align='center'}
+
+ggplot(data = diamonds) +
+geom_point(aes(x = carat, y = price))
+
+```
+]
+.pull-right[
+## Interpreting Scatterplots
+
+- Form: 
+
+- Direction: 
+
+- Strength: 
+
+- Deviations from this pattern?:
+
+  ]
+  
+???
+  #### **Form**
+
+Is the plot linear?  Is the plot curved?  Is there a distinct pattern in the plot? Are there multiple groups?
+
+#### **Strength**
+
+Does the plot follow the form very closely?  Or is there a lot of variation?   
+
+#### **Direction**
+
+Is the pattern increasing?  Is the plot decreasing?
+
+- **Positively**: Above (below) average in one variable tends to be associated with above (below) average in another variable.
+
+- **Negatively**: Opposite pattern.
+
+---
+.pull-left[
+## What changes if we take the log?
+```{r, eval=TRUE, fig.width = 4, fig.height = 4, fig.align='center'}
+
+ggplot(data = diamonds) +
+geom_point(aes(x = log(carat), y = log(price)))
+
+```
+]
+.pull-right[
+## Interpreting Scatterplots
+
+- Form: 
+
+- Direction: 
+
+- Strength: 
+
+- Deviations from this pattern?:
+
+  ]
+  
+
+
+
+---
+# Visualizing what drives price
+
+* We've assessed the relationship between carat and price. We can use other mappings to incorporate other variables. 
+  - <span style="background:yellow">color</span>
+  - size
+  - shape
+```{r, eval=TRUE, fig.width = 4, fig.height = 4, fig.align='center'}
+
+ggplot(data = diamonds) +
+geom_point(aes(x = carat, y = price, `color` = clarity)) 
+#note: use color with geom_point, fill with geom_bar
+
+```
+
+---
+# Mapping aesthetics to data vs setting aesthetics
+
+Specifying color and other aesthetics is done within aes() when we map to data. However, what if we just wanted to make an olive-colored scatterplot?
+
+```{r, eval=FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
+
+ggplot(data = diamonds) +
+geom_point(aes(x = carat, y = price), color = "darkolivegreen")
+
+```
+--
+And what if we wanted to make the points more transparent?
+
+```{r, eval=TRUE, fig.width = 4, fig.height = 3, fig.align='center'}
+
+ggplot(data = diamonds) +
+geom_point(aes(x = carat, y = price), color = "darkolivegreen", alpha = I(.4))
+
+```
+--
+
+Mappings being set independent of your data set go outside of `aes()`.
+
+???
+
+The alpha mapping makes points transparent. What is inside I() determines
+how transparent. It is a good idea when you have a scatterplot
+with a lot of overplotting like this one. 
+
+---
+# Visualizing what drives price
+
+* We've assessed the relationship between carat and price. We can use other mappings to incorporate other variables. 
+  - color
+  -  <span style="background:yellow">size</span>
+  - shape
+
+```{r, eval=TRUE, fig.width = 4, fig.height = 4, fig.align='center'}
+
+ggplot(data = diamonds) +
+geom_point(aes(x = carat, y = price, `size` = clarity), alpha = I(0.4))
+
+```
+
+---
+# Visualizing what drives price
+
+* We've assessed the relationship between carat and price. We can use other mappings to incorporate other variables. 
+  - color
+  - size
+  - <span style="background:yellow">shape</span>
+```{r, eval=TRUE, fig.show='hide'}
+
+ggplot(data = diamonds) +
+geom_point(aes(x = carat, y = price, `shape` = clarity), alpha = I(0.4))
+
+```
+
+--
+
+Often, the data will determining which of the mappings are best at displaying the relationships in the data. 
+
+--
+There are several signs that this particular iteration of the plot may not be ideal. 
+---
+
+## Visualizing what drives price
+
+* What about the relationship between clarity (categorical) and price?
+
+* In SAS, we did this kind of thing with box plots. 
+
+
+```{r, eval=TRUE,out.width = '30%', out.height = '5%'}
+
+ggplot(data = diamonds) +
+geom_boxplot(aes(x = clarity, y = price))
+
+```
+
+---
+
+## Visualizing what drives price
+
+* What about the relationship between clarity (categorical) and price?
+
+* In SAS, we did this kind of thing with box plots. 
+
+```{r, eval=TRUE,  error=TRUE}
+
+ggplot(data = diamonds) +
+geom_boxplot(aes(x = clarity, y = price), colour = clarity)
+
+```
+
+--
+
+What happened?
+
+---
+## Visualizing what drives price
+
+* What about the relationship between clarity (categorical) and price?
+
+* In SAS, we did this kind of thing with box plots. 
+
+
+```{r, eval=TRUE,out.width = '30%', out.height = '5%'}
+
+ggplot(data = diamonds) +
+geom_boxplot(aes(x = clarity, y = price, colour = clarity))
+#there we go!
+```
+
+---
+## Visualizing what drives price
+
+* What about the relationship between clarity (categorical) and price?
+
+* In SAS, we did this kind of thing with box plots. 
+
+```{r, eval=TRUE,out.width = '30%', out.height = '5%'}
+
+ggplot(data = diamonds) +
+geom_boxplot(aes(x = clarity, y = price, colour = clarity)) +
+  ggtitle("Clarity and Price of a Diamond") +
+  labs(x = "Clarity of Diamond", y = "Price (US $) of Diamond") 
+#oh, how professional.
+```
+
+--
+* Simply not-getting-an-error-message is not good enough! Keep going until your message is clear, professional, and attractive.
+
+---
+## Alternative to boxplots
+.pull-left[
+```{r, fig.keep='all', fig.show='hold',out.width = '30%', out.height = '5%'}
+
+ggplot(data = diamonds) +
+ `geom_boxplot`(aes(x = clarity, y = price, colour = clarity)) +
+  ggtitle("Clarity and Price of a Diamond") +
+  labs(x = "Clarity of Diamond", y = "Price (US $) of Diamond") 
+```
+
+]
+
+.pull-right[
+```{r, fig.keep='all', fig.show='hold',out.width = '30%', out.height = '5%'}
+ggplot(data = diamonds) +
+  `geom_violin`(aes(x = clarity, y = price, colour = clarity)) +
+  ggtitle("Clarity and Price of a Diamond") +
+  labs(x = "Clarity of Diamond", y = "Price (US $) of Diamond") 
+
+```
+]
+---
+
+## Some useful and fun soures
+
+We're not done with visualization. Not even close. But in the meantime, here are some sources you might enjoy:
+
+* Print this: https://raw.githubusercontent.com/rstudio/cheatsheets/main/data-visualization.pdf 
+  - You're welcome. 
+* For reference: https://ggplot2.tidyverse.org/reference/
+* For inspiration: https://www.r-graph-gallery.com/
+
+---
+
+background-color: #6495ED
+
+## Your Turn
+
+Open a new script. Start your script with `library(ggplot2)`. Save it as `t2_yt_mpg.R`
+
+We're ultimately interested in what affects the highway gas mileage of a vehicle. 
+
+1. Type `?mpg` into your console and read about this data set. Also use `head()` and `summary()` to get to know the data better.
+2. Create a plot displaying the distribution of the type of transmission of the vehicles. 
+  - Add color to this plot.
+  - Add professional-looking x and y-axis labels.
+  - Add a title.
+3. Create a histogram displaying the distribution of engine displacement. 
+  - Polish this plot with labels and a title. 
+  - Did you look at different binwidths? Should you?
+3. Create a scatter plot to examine the relationship between engine displacement and highway gas mileage. 
+  - Explain to your uncle (say) the relationship between engine displacement and highway gas mileage. 
+  - How could you incorporate the type of transmission into this plot? Try a few options, and choose which you feel most clearly displays the data patterns. 
+  - Set the alpha transparency mapping to 0.3. Why are some points darker/less transparent than others? 
+  - Add axis labels and a title. 
+4. Choose another categorical variable and create a quality visualization of the relationship between it and **city** gas mileage. 
+  
+???
+**The effort you put into visualizations and the end quality matters - both to me, and to anyone you are trying to communicate with in your professional life.**
+
+
+  

@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Producing Reports</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr. Lendie Follett" />
+    <script src="SAS_topic_5_files/header-attrs-2.14/header-attrs.js"></script>
+    <link href="SAS_topic_5_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="SAS_topic_5_files/remark-css-0.0.1/hygge-duke.css" rel="stylesheet" />
+    <link href="SAS_topic_5_files/remark-css-0.0.1/tamu-fonts.css" rel="stylesheet" />
+    <script src="SAS_topic_5_files/fabric-4.3.1/fabric.min.js"></script>
+    <link href="SAS_topic_5_files/xaringanExtra-scribble-0.0.1/scribble.css" rel="stylesheet" />
+    <script src="SAS_topic_5_files/xaringanExtra-scribble-0.0.1/scribble.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#FF0000"],"pen_size":3,"eraser_size":30,"palette":[]}) })</script>
+    <script src="SAS_topic_5_files/kePrint-0.0.1/kePrint.js"></script>
+    <link href="SAS_topic_5_files/lightable-0.0.1/lightable.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Producing Reports
+]
+.author[
+### Dr. Lendie Follett
+]
+.date[
+### Fall 2022
+]
+
+---
+
+
+class: center, middle
+&lt;style type="text/css"&gt;
+  .reveal p {
+    text-align: left;
+  }
+  .reveal ul {
+    display: block;
+  }
+  .reveal ol {
+    display: block;
+  }  
+&lt;/style&gt;
+
+&lt;!-- Note: For presenter mode, first copy the html presentation with keyboard shortcut "c". Make sure mirroring is off. Have the copy on the big screen and go full screen mode "f" with the one on the laptop.
+"p" for presenter mode
+https://bookdown.org/yihui/rmarkdown/xaringan-key.html --&gt;
+
+&lt;!-- see LWPG1V2_001 Lesson 5 powerpoint--&gt;
+  
+
+
+## Titles and Labels
+
+---
+
+## Adding titles 
+
+Titles can add context to your report (SAS-generated output) and help your audience follow along. The following syntax adds an `\(n^{th}\)` level title. 
+
+```r
+TITLE&lt;n&gt; "title-text";
+
+```
+* Replace `TITLE&lt;n&gt;` with `TITLE`, `TITLE2`, `TITLE3`, etc...
+* Replace `title-text` with some descriptive title. 
+
+--
+For example,
+
+.pull-left[
+```r
+title1 "Class Report";
+title2 "All Students";
+
+proc print data=s50dat.class_birthdate;
+run;
+
+```
+]
+
+.pull-right[
+&lt;img src="Images/sas_t5_title.png" width="50%" style="display: block; margin: auto;" /&gt;
+
+]
+???
+
+First let's learn about some additional SAS statements that can be used with any procedure to enhance a report. 
+
+TITLE is a global statement that establishes a permanent title for all reports created in your SAS session. The syntax is just the keyword TITLE followed by the title text enclosed in quotation marks. You can have up to 10 titles. 
+
+---
+## Clearing Titles
+
+* `Title` is a global statement; it will remain active for your whole SAS session. 
+* To clear all titles:
+
+```r
+title; /*clear titles*/
+```
+
+* It's good practice to clear all titles at the beginning and end of each program. 
+
+???
+Remember that TITLE and FOOTNOTE are global statements, and they remain active as long as your SAS session is active. If you want to clear the titles and footnotes you've specified, you can use the keyword TITLE or FOOTNOTE with no text. That's called a null TITLE statement. The null TITLE statement clears all the titles that you've specified on any line. It's a good idea to do this at the end of your program. Client applications such as SAS Studio submit a null TITLE statement for you at the end of your code, but it's a good idea to get in the habit of submitting the statement yourself. 
+
+---
+## Macro Variables in Titles and Footnotes
+* Sometimes, it's useful to use macro variables (recall SAS topic 3) in titles. 
+* Allows you to dynamically change all titles automatically, rather than manually 
+
+--
+
+* For example 
+
+.pull-left[
+```r
+%let age=13;
+
+title1 "Class Report";
+title2 "Age=&amp;age";
+footnote1 "School Use Only";
+
+proc print data=s40dat.class_birthdate;
+    where age=&amp;age;
+run;
+
+title;
+
+```
+]
+.pull-right[
+&lt;img src="Images/sas_t5_macro.png" width="50%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+## Adding temporary labels
+* Just like titles added helpful context, labels can too. 
+
+```r
+LABEL col-name="label-text";
+```
+* Note: a `LABEL` statement will occur within a `proc` step; it is *not* a global statement. 
+* Replace `col-name` with the name of the column you wish to provide a label for the proceure. 
+* Replace `label-text` with that label. 
+
+For example, 
+
+.pull-left[
+```r
+proc means data=sashelp.cars;
+    where type="Sedan";
+    var MSRP MPG_Highway;
+    label MSRP="Manufacturer Suggested Retail Price"
+          MPG_Highway="Highway Miles per Gallon";
+    /*the above labels only apply to 
+    this proc output*/
+run;
+
+```
+]
+.pull-right[
+&lt;img src="Images/sas_t5_label.png" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+???
+Column names must adhere to particular naming conventions, but that means sometimes the names might be a bit difficult to interpret, especially for someone that isn’t familiar with the data. Labels are an easy way to enhance a report with more descriptive column headings. A label can be any text string up to 256 characters, including spaces and special characters. 
+
+
+---
+## Applying permanent labels
+* The previous slide demonstrated how to add *temporary* labels
+* If you put the same label statement in a `DATA` step, those labels are permanent
+
+```r
+/*add a label statement to data statement*/
+data cars_update;
+    set sashelp.cars;
+    keep Make Model Type MSRP AvgMPG;
+    AvgMPG=mean(MPG_Highway, MPG_City);
+    label MSRP="Manufacturer Suggested Retail Price"
+          AvgMPG="Average Miles per Gallon";
+run;
+
+/*see permanent attributes*/
+proc contents data=cars_update;
+run;
+
+/*Now all procs (except for proc print) will use the above labels. 
+Proc print requires a label argument. i.e.,
+
+proc print data = cars_update label;
+run;*/
+
+```
+
+
+???
+
+If we take the same LABEL statement and put it in a DATA step, labels are assigned to the designated columns as permanent attributes in the descriptor portion of the table. 
+
+When procedures create reports using that data, labels are automatically displayed. However, you still need the LABEL option in PROC PRINT. 
+
+---
+class: middle, center
+
+## Advanced Frequency Reports
+
+---
+
+## Proc freq: so many options
+
+* You remember `proc freq` as an easy way to get one-way frequency tables. 
+* However, there are several options to consider to enhance your report!
+
+```r
+&lt; ODS GRAPHICS ON; &gt;
+PROC FREQ DATA=input-table &lt; options &gt;; 
+         TABLES  col-name(s) &lt; / options &gt;;
+RUN;
+```
+
+* `PROC FREQ` statement options:                         
+        - ORDER=FREQ, FORMATTED, DATA                        
+        - NLEVELS                    
+        
+* `TABLES` statement options:                            
+        - NOCUM                                            
+        - NOPERCENT                                        
+        - PLOTS=FREQPLOT (must turn on ODS Graphics)                   
+        - OUT=output-table       
+
+* Let's go to support.sas.com/documentation to figure out what these things do.
+
+* Remember - you can still use `where`, `format`, and `label` statements within a `proc freq`!
+
+???
+SAS 9.4 Viya -&gt; Syntax Quick Links -&gt; By name -&gt; Freq
+
+Click on Proc freq statement link
+
+Go back, click on tables staetment link, see options table. 
+
+
+---
+## Proc freq: two-way frequency tables
+
+* We know how to get a frequency table of one variable. 
+* Often, we want to know how two categorical variables are distributed *jointly*. 
+* In that case, we need a two-way frequency table!
+* Adding an asterisk between two variable names is all we need to do!
+
+```r
+PROC FREQ DATA=input-table &lt; options &gt;; 
+         TABLES  col-name1*col-name2 &lt; / options &gt;;
+RUN;
+
+```
+
+--
+
+For example, suppose we were curious about what types of vehicles different countries tend to produce:
+.pull-left[
+```r
+proc freq data = sashelp.cars;
+tables Origin*Type;
+label Origin = "Country of Origin"
+	  Type = "Type of Vehicle";
+run;
+```
+]
+.pull-right[
+&lt;img src="Images/sas_t5_freq2.png" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+???
+
+One symbol (asterisk) in the TABLES statement can make a huge difference in the results. When you place an asterisk between two columns in the TABLES statement, PROC FREQ produces a two-way frequency or crosstabulation report. This enables us to look at frequency counts and percentages for a combination of values in the two columns. 
+ 
+
+---
+class: middle, center
+
+## Advanced Numerical Summaries
+---
+## Proc means
+
+* We've used `proc means` before, when we explored data.
+* We can extend our previous use to include various statistics and groupings within the data. 
+
+```r
+PROC MEANS DATA=input-table &lt;stat-list&gt; &lt;options&gt;; 
+          VAR col-name(s); 
+*         CLASS col-name(s); 
+*         WAYS n; 
+*         OUTPUT OUT=output-table &lt;statistic=col-name&gt;; 
+RUN;
+```
+
+--
+* The `var` statement is used to identify the *numeric column(s)* you want to summarize. 
+* The `class` statement allows you to list one or more column by which to group the data. 
+* If you're grouping by more than one variable, the `ways` statement can help control combinations. 
+* The `output` statement creates a new SAS data set of the summarised output. 
+
+---
+
+
+class: middle, center
+
+## Visualization
+
+---
+
+## Visualization
+
+* Data visualization is the technique of communicating data via graphical representation
+* THIS IS AN IMPORTANT SKILL
+* There are many types of plots available to us
+* How do we choose?
+--
+
+  - What is your research question?
+  
+--
+
+  - Does your research question involve one (univariate) or multiple (multivariate) variables?
+  
+--
+
+  - Does your research question involve discrete or continuous variables? 
+
+???
+
+---
+## First, some definitions
+
+Definition: A **discrete** variable has distinct categories and can be stored as either character or numeric. 
+
+Definition: A **continuous** variable is numeric and can theoretically take on any value in an interval on the real line. 
+
+--
+
+For example, MSRP is a .yellow[**continuous**] variable while Origin is a .green[**discrete**] variable. Note, Cylinders - though numeric - could be thought of as .green[**discrete**].
+
+&lt;table class="table" style="width: auto !important; float: left; margin-right: 10px;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Make &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Type &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Origin &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; DriveTrain &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; MSRP &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Invoice &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; EngineSize &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Cylinders &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Acura &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; SUV &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Asia &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; All &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: yellow !important;"&gt; 36945 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 33337 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.5 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 6 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Acura &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Sedan &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Asia &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Front &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: yellow !important;"&gt; 23820 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 21761 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.0 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 4 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Acura &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Sedan &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Asia &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Front &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: yellow !important;"&gt; 26990 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 24647 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.4 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 4 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Acura &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Sedan &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Asia &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Front &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: yellow !important;"&gt; 33195 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 30299 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.2 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 6 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Acura &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Sedan &lt;/td&gt;
+   &lt;td style="text-align:left;background-color: green !important;"&gt; Asia &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Front &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: yellow !important;"&gt; 43755 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 39014 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.5 &lt;/td&gt;
+   &lt;td style="text-align:right;background-color: green !important;"&gt; 6 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+
+---
+## Univariate plots: Discrete
+
+* bar chart: a chart displaying groups of data with bars having a length proportional to the value corresponding to each (discrete) group
+
+* There are two types of bar charts
+  1. height of the bar represents the number of cases per group
+  2. height of bar represents some summary statistic within each group.
+  
+* We will focus on the first type in our univariate discussion
+* `PROC SGPLOT` is the procedure we will use to do most of our plotting. In the case of bar charts,
+
+```r
+proc sgplot data = input-data;
+vbar discrete-col-name;
+run;
+```
+
+---
+## Univariate plots: Discrete
+
+A bar chart could be used to count the number of vehicles being made in each country of origin: 
+
+.pull-left[
+```r
+/*How many cars per country of origin?*/
+title 'Country of Origin Analysis';
+proc sgplot data = sashelp.cars;
+vbar origin;
+run;
+```
+]
+.pull-right[
+&lt;img src="Images/sas_t5_bar1.png" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+???
+
+This plot shows us that we have a little over 150 vehicles coming from Asia, approximately 125 coming from europe, and close to 140 coming from usa. 
+
+---
+
+## Univariate plot: Continuous
+
+* histogram: a type of bar chart used to show the frequency, or relative frequency, with which data points take on continuous values. It shows the shape of the distribution of continuous data points.
+
+* We can use similar syntax to what we used to make a bar chart:
+
+```r
+proc sgplot data = input-data;
+histogram continuous-col-name;
+run;
+```
+
+For example, 
+.pull-left[
+```r
+/*What does the distribution of prices look like?*/
+proc sgplot data = sashelp.cars;
+histogram MSRP;
+run;
+
+```
+]
+.pull-right[
+&lt;img src="Images/sas_t5_hist1.png" width="85%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+## Multivariate plot: Continuous x discrete
+
+* Goal: show a simple summary statistic of a numeric variable within each level of a categorical variable
+* We can add options after `/` in the `vbar` statement.
+* `response` and stat are some of the options SAS recognizes
+* `datalabel` tells SAS to label the value of the bar height
+
+```r
+/*Display mean for each species*/
+proc sgplot data = input-data;
+vbar discrete-col / response = numeric-col &lt; stat = mean &gt; &lt; datalabel &gt;;
+run;
+```
+
+---
+## Multivariate plot: Continuous x discrete
+
+.pull-left[
+```r
+/*What origins have the highest prices?*/
+title 'Price by origin';
+proc sgplot data = sashelp.cars;
+vbar origin / response = MSRP stat = mean datalabel;
+run;
+```
+]
+.pull-right[
+&lt;img src="Images/sas_t5_bar2.png" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+???
+This plot tells us that Asian vehicles tend to be the most affordable, while European cars are the most expensive, averaging around $48,000 per vehicle. 
+Note that the format of MSRP applies in the proc sgplot!
+
+---
+## Multivariate plot: Continuous x discrete
+
+* The bar chart in the previous slide doesn't show much detail in how MSRP varies with origin. 
+* It would be nice if we could show the same kind of variability that we saw in the histogram, but for each origin separately:
+
+.pull-left[
+```r
+/*ITERATION 1: add group = option after / */
+proc sgplot data=sashelp.cars;
+histogram MSRP / group=origin;
+run;
+
+/*ITERATION 2: hard to see overlapping portions... make transparent*/
+proc sgplot data=sashelp.cars;
+histogram MSRP / group=origin transparency=0.5;
+run;
+
+/*ITERATION 3: overlay densities with a density statement*/
+proc sgplot data=sashelp.cars;
+histogram MSRP / group=origin transparency=0.5;
+density MSRP / type=kernel group=origin;
+run;
+
+```
+]
+
+.pull-right[
+&lt;img src="Images/sas_t5_hist2.png" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Multivariate plot: Continuous x discrete
+
+* An alternative to the overlaid histograms is the grouped boxplot! 
+* box plot (a.k.a box and whisker plot): a graphical representation of the quantiles and outliers of a continuous variable.
+  - The Interquartile Range (IQR) is the quantity:(75th percentile minus the 25th percentile)
+  - Outliers are typically considered as values exceeding 1.5*IQR above the 75th or below the 25th percentile
+  - The whiskers in a box plot typically correspond to the max and min non-outlier values
+*Thus, a boxplot is a simple summary of the distribution of a continuous variable. 
+
+
+.pull-left[
+```r
+proc sgplot data = sashelp.cars;
+vbox MSRP / category = origin ;
+run;
+/*what happens when "vbox" is changed
+to "hbox"?*/
+```
+]
+
+.pull-right[
+&lt;img src="Images/sas_t5_box.png" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+## Multivariate plot: Continuous x continuous
+
+* The most common way to display two continuous variables jointly is with a scatterplot.
+* scatterplot: a plot displaying the joint distribution of two continuous variables by mapping the value of one variable to the x-axis and the value of the other variable to the y-axis.
+* When interpreting a scatterplot (your own or otherwise), you want to make note of the following key features:
+  * Structural form
+  * Shape - linear, curved?
+  * Direction - positive, negative?
+  * Strength - how closely does the collection of points follow the
+structural form?
+  * Outliers - points not seeming to follow the same structural form
+
+---
+## Multivariate plot: Continuous x continuous
+
+&lt;img src="Images/scatter1.png" width="45%" /&gt;&lt;img src="Images/scatter2.png" width="45%" /&gt;
+&lt;img src="Images/scatter3.png" width="45%" /&gt;&lt;img src="Images/scatter4.png" width="45%" /&gt;
+---
+## Multivariate plot: Continuous x continuous
+* A `scatter` statement can be added within a `proc sgplot` step to obtain a scatterplot
+* Importantly, a scatterplot requires both an x dimension (`x=`) and a y dimension (`y=`)
+
+.pull-left[
+```r
+proc sgplot data = sashelp.cars;
+scatter x = Horsepower y = MSRP ;
+run;
+```
+]
+
+.pull-right[
+&lt;img src="Images/sas_t5_scatter1.png" width="90%" style="display: block; margin: auto;" /&gt;
+]
+---
+## Multivariate plot: Continuous x continuous
+* Want to take into consideration an important discrete variable as well? We can again use color to our advantage!
+* As before, the `group = ` argument after the `/` allows us to select a discrete variable by which to color. 
+
+.pull-left[
+```r
+proc sgplot data = sashelp.cars;
+scatter x = Horsepower y = MSRP / group = origin;
+run;
+```
+]
+
+.pull-right[
+&lt;img src="Images/sas_t5_scatter2.png" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+## Case Study
+
+Goal: practice frequency tables, numerical summaries, and data visualization using the storm data. 
+
+See: t5\_cs\_reports.pdf.
+
+Open a blank script and save it as t5\_cs\_reports.sas.
+
+The next video will walk us through this case study.
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

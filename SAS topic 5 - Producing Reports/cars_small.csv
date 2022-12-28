@@ -1,0 +1,12 @@
+Make,Model,Type,Origin,DriveTrain,MSRP,Invoice,EngineSize,Cylinders,Horsepower,MPG_City,MPG_Highway,Weight,Wheelbase,Length
+Acura,MDX,SUV,Asia,All,36945.00,33337.00,3.5,6,265,17,23,4451,106,189
+Acura,RSX Type S 2dr,Sedan,Asia,Front,23820.00,21761.00,2,4,200,24,31,2778,101,172
+Acura,TSX 4dr,Sedan,Asia,Front,26990.00,24647.00,2.4,4,200,22,29,3230,105,183
+Acura,TL 4dr,Sedan,Asia,Front,33195.00,30299.00,3.2,6,270,20,28,3575,108,186
+Acura,3.5 RL 4dr,Sedan,Asia,Front,43755.00,39014.00,3.5,6,225,18,24,3880,115,197
+Acura,3.5 RL w/Navigation 4dr,Sedan,Asia,Front,46100.00,41100.00,3.5,6,225,18,24,3893,115,197
+Acura,NSX coupe 2dr manual S,Sports,Asia,Rear,89765.00,79978.00,3.2,6,290,17,24,3153,100,174
+Audi,A4 1.8T 4dr,Sedan,Europe,Front,25940.00,23508.00,1.8,4,170,22,31,3252,104,179
+Audi,A41.8T convertible 2dr,Sedan,Europe,Front,35940.00,32506.00,1.8,4,170,23,30,3638,105,180
+Audi,A4 3.0 4dr,Sedan,Europe,Front,31840.00,28846.00,3,6,220,20,28,3462,104,179
+Audi,A4 3.0 Quattro 4dr manual,Sedan,Europe,All,33430.00,30366.00,3,6,220,17,26,3583,104,179

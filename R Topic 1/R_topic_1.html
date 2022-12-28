@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Introduction to R (Part 1) - The Basics</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr. Lendie Follett" />
+    <script src="R_topic_1_files/header-attrs-2.9/header-attrs.js"></script>
+    <link href="R_topic_1_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="R_topic_1_files/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Introduction to R (Part 1) - The Basics
+### Dr. Lendie Follett
+### 6/22/2021
+
+---
+
+
+# Why R?
+
+* R and Python are the most common languages used in data science
+
+--
+* R is open source - this means:
+  1. It is free, which is cool.
+  2. You have access to the code behind the functions you are using on your data
+
+--
+* The entire data science / statistics / computer science community contributes to R's development through *packages*
+
+--
+* R is very flexible and, thus, powerful. If you can program it, you can do it.
+
+---
+
+
+# Getting Started
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="Images/R_t1_rstudio.png" alt="RStudio interface" width="70%" height="50%" /&gt;
+&lt;p class="caption"&gt;RStudio interface&lt;/p&gt;
+&lt;/div&gt;
+???
+
+Have the students open Rstudio
+
+---
+## R is a calculator
+Here's a list of a few mathematical tasks and code translations:
+.pull-left[
+#####  `\(x = 40\)` (assigning `\(x\)` the value of 40)
+#####  `\(y = \begin{bmatrix} 6.2 &amp; 4.9 &amp; 1.1 \end{bmatrix}\)` (create vector y)
+#####  `\(2x\)` (x times 2)
+#####  `\(\sum^3_{i = 1} y_i = 6.2 + 4.9 + 1.1\)` (sum up the matrix)
+##### `\(x^2\)` (take x to `\(2^{nd}\)` power)
+##### `\(y_2\)` (taking `\(2^{nd}\)` element of y)
+]
+
+.pull-right[
+#####  `x &lt;- 40`
+#####  `y &lt;- c(6.2, 4.9, 1.1)`
+#####  `2*x`
+#####  `sum(y)`
+##### `x^2`
+##### `y[2]`
+]
+
+???
+
+Tip: be very explicit/clear with your mathematical operators. e.g., 2*x instead of 2x. 
+
+---
+
+## Functions
+
+* R has many ready-to-use functions
+* Usually, the name of the function is self explanatory
+* Functions require *arguments* inside the parentheses
+
+
+```r
+function_name(argument1, argument2)
+```
+
+
+
+---
+## Functions
+
+* R has many ready-to-use functions
+* Usually, the name of the function is self explanatory
+* Functions require *arguments* inside the parentheses
+
+```r
+function_name(argument1, argument2)
+```
+
+* You supply the argument(s) - for example,
+
+
+```r
+#square root of any real number
+sqrt(9)
+```
+
+```
+## [1] 3
+```
+
+```r
+#what happens if we supply a vector as the argument?
+sqrt(y)
+```
+
+```
+## [1] 2.489980 2.213594 1.048809
+```
+
+
+---
+## Functions
+
+* R has many ready-to-use functions
+* Usually, the name of the function is self explanatory
+* Functions require *arguments* inside the parentheses
+
+```r
+function_name(argument1, argument2)
+```
+
+
+* Some arithmetic functions: `sqrt(), sin(), cos(), exp(), log()`. These will apply themselves to each element of the vector.
+
+* Some summary functions: `mean(), sum(), var(), min(), max(), length()`. These will reduce a vector to a single summary statistic (to a vector of length 1).
+
+```r
+mean(y)
+```
+
+```
+## [1] 4.066667
+```
+
+```r
+sum(y)
+```
+
+```
+## [1] 12.2
+```
+
+---
+
+## Functions
+
+* If you're unsure about what a function does, ask R. 
+* For example, create a vector consisting of a regular sequence of numbers using the `seq()` function
+
+
+```r
+#simply type a "?" before the function name
+?seq
+#SURPRISE ATTACK YOUR TURN:
+#how would I generate a vector containing a sequence
+#of 10 evenly spaced numbers ranging from 1 to 200?
+```
+
+
+*There are MANY functions in R. We won't even scratch the surface in classtime. *
+
+---
+
+# Getting Started
+
+Open a *script* - typing in the console is fine to start with but we will put code we want to save into a script.
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="Images/R_t1_rstudio3.png" alt="RStudio Interface" width="70%" height="50%" /&gt;
+&lt;p class="caption"&gt;RStudio Interface&lt;/p&gt;
+&lt;/div&gt;
+???
+
+Have the students open Rstudio. 
+
+Re-do some of the calculations under the comment 'R is a calculator'
+
+Save the script together as in_class_intro.R
+---
+background-color: #6495ED
+
+## Your Turn
+
+Keep working within `in_class_intro.R`. 
+
+In machine learning, we often have to calculate the *mean squared difference between two vectors*. Say we have these two vectors:
+
+* `\(a = \begin{bmatrix} 2 &amp; 4 &amp; 6 &amp;5\end{bmatrix}\)` and `\(b = \begin{bmatrix} 2.2 &amp; 4.5 &amp; 7.2&amp; 4.9 \end{bmatrix}\)`
+
+Calculate `\(\frac{1}{4}\sum_{i=1}^4(a_i - b_i)^2\)`. 
+
+(You may recognize this as being closely related to the Euclidean distance. )
+
+---
+## Logical Operators
+* We can use R to make comparisons using *logical operators*
+* A statement using *logical operators* will return a *logical value*: `TRUE` or `FALSE`
+* Logical operators:
+
+##### `==` equal
+##### `!=` not equal
+##### `&lt;, &gt;` less than, greater than
+##### `&lt;=, &gt;=` less than or equal to, greater than or equal to
+##### `%in%` appears in the following 
+
+*Note we need a double equal sign to assess whether two things are equal!*
+
+---
+## Case Study
+
+In the last your turn you created two objects `a` and `b` - you should see them in your Environment in the top right hand the RStudio window. 
+
+1. Calculate the mean of `a` and save it as `mean_a`
+2. Calculate the mean of `b` and save it as `mean_b`
+3. Create a new variable `is_a_bigger` which is TRUE if `a` is bigger than `b`, on average, and FALSE otherwise
+4. Create a new vector, the same length as `a` and `b`, for which the `\(i^{th}\)` element is TRUE if `\(a_i &gt; b_i\)`, and FALSE otherwise. 
+
+???
+Activity in R_t1_code.R
+
+---
+## Naming things
+
+* We've already named a few objects. (`a, b, x, y, is_a_bigger`, ...)
+* Recall, we name an object whenever we use the *assignment operator* (`&lt;-` or `=`).
+
+```r
+object_name &lt;- object_value
+```
+* Generally, it is good practice to come up with MEANINGFUL and DISTINCT names
+* One important thing to remember (especially if you're getting errors): R is case sensitive! e.g., (`a` and `A` are considered distinct objects.
+
+* R has some naming conventions:
+
+  * The first character of the name must be an UPPER or lower case letter (A-Z, a-z). After that, characters can be:
+
+    * UPPER/lower case letters 
+    
+    *  underscore (\_) and digits 0-9
+   
+    * period (.), unlike in SAS
+
+* So, for example, `1x` is not a valid name, but `x1` would be
+
+
+---
+## Commenting your code
+
+* As always, it's good practice to comment code
+* You can comment *one line at a time* by starting the line with a "\#". 
+* (As oppose to block commenting in SAS with /**/, which can perform multi-line comments)
+
+
+```r
+#I like to comment as I code
+#it helps future-me remember what
+#I was thinking
+
+#assign x the value pi (approx. 3.14)
+#x &lt;- pi 
+
+#nevermind, assign x the logical value of (pi &gt; 3)
+x &lt;- pi&gt;3
+```
+
+???
+go back and comment the your turn code together
+
+---
+## Print this
+
+http://cran.r-project.org/doc/contrib/Short-refcard.pdf
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+<style>
+.logo {
+  background-image: url(Rlogo.png);
+  background-size: contain;
+  background-repeat: no-repeat;
+  position: absolute;
+  top: 1em;
+  right: 1em;
+  width: 110px;
+  height: 128px;
+  z-index: 0;
+}
+</style>
+
+<script>
+document
+  .querySelectorAll(
+    '.remark-slide-content' +
+    ':not(.title-slide)' +
+    // add additional classes to exclude here, e.g.
+    // ':not(.inverse)' +
+    ':not(.hide-logo)'
+  )
+  .forEach(el => {
+    el.innerHTML += '<div class="logo"></div>';
+  });
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
